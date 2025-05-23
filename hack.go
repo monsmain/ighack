@@ -40,6 +40,10 @@ func tryPassword(username, password string) bool {
     bodyBytes, err := io.ReadAll(resp.Body)
     if err != nil {
         fmt.Println("Error reading response:", err)
+        fmt.Println("Trying password:", password)
+        fmt.Println("Response status:", resp.StatusCode)
+        fmt.Println("Response body:", body)
+// aded
         return false
     }
     body := string(bodyBytes)
