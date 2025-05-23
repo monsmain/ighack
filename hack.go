@@ -83,7 +83,7 @@ func checkCookie(cookie string) (bool, string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://i.instagram.com/api/v1/user", uid), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://www.instagram.com/accounts/login", uid), nil)
 	if err != nil {
 		return false, "", fmt.Errorf("request creation error: %v", err)
 	}
