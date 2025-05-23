@@ -29,7 +29,7 @@ func tryPassword(username, password string) bool {
         return false
     }
 
-    req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
+    req.Header.Set("User-Agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)")
     req.Header.Set("X-CSRFToken", "z2y86ITZAahahOfRghvrCF3PlUj4wx8N")
     req.Header.Set("X-Instagram-AJAX", "1023134472")
     req.Header.Set("X-Requested-With", "XMLHttpRequest")
