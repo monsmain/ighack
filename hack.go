@@ -14,10 +14,13 @@ import (
 func tryPassword(username, password string) bool {
     loginURL := "https://www.instagram.com/accounts/login/ajax/"
     data := url.Values{}
+    data.Set("enc_password", "#PWD_INSTAGRAM_BROWSER:10:1748019955:"+password)
     data.Set("username", username)
-    data.Set("enc_password", fmt.Sprintf("#PWD_INSTAGRAM_BROWSER:0:&:%s", password))
-    data.Set("queryParams", "{}")
     data.Set("optIntoOneTap", "false")
+    data.Set("queryParams", "{}")
+    data.Set("trustedDeviceRecords", "{}")
+    data.Set("loginAttemptCount", "0")
+    data.Set("isPrivacyPortalReq", "false")
 
     client := &http.Client{}
     req, err := http.NewRequest("POST", loginURL, strings.NewReader(data.Encode()))
