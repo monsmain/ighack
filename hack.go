@@ -8,7 +8,7 @@ import (
     "net/http"
     "os"
     "time"
-
+    "net/smtp" 
     "github.com/google/uuid"
     "github.com/jordan-wright/email"
     _ "github.com/mattn/go-sqlite3"
