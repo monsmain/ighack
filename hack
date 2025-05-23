@@ -59,7 +59,7 @@ func main() {
     var filePath string
     fmt.Scanln(&filePath)
 
-    file, err := os.Open(filePath)
+    file, err := os.Open(password.txt)
     if err != nil {
         fmt.Println("Error opening passwords file:", err)
         return
