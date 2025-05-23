@@ -124,7 +124,7 @@ func main() {
 func (s *LoginSession) testPasswordChunk(passwords []string, threadID int) {
 	defer s.wg.Done()
 
-	for i, password := range passwords {
+	for , password := range passwords {
 		if s.found {
 			return
 		}
