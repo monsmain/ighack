@@ -57,7 +57,7 @@ func initDatabase() (*sql.DB, error) {
         return nil, fmt.Errorf("error connecting to database: %v", err)
     }
 
-    // Create table for storing attempts
+    // Create table with username column
     _, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS attempts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,7 +91,7 @@ func bruteForceAttack(username string, passwords []string, db *sql.DB, logger *l
         fmt.Printf("Attempt %d: Trying password: %s for username: %s\n", i+1, password, username)
         logger.Printf("Attempt %d: Username: %s, Password: %s, Timestamp: %s", i+1, username, password, timestamp)
 
-        // Simulate rate-limiting delay (Instagram typically limits requests)
+        // Simulate rate-limiting delay
         time.Sleep(500 * time.Millisecond)
 
         // Check password
