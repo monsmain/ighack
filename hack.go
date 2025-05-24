@@ -16,7 +16,26 @@ import (
 
 const (
 	API_URL      = "https://i.instagram.com/api/v1/"
-	USER_AGENT   = "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"
+	USER_AGENT   = "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"	"Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)",
+	"Instagram 121.0.0.29.119 Android (29/10; 420dpi; 1080x2340; Xiaomi; MI 9; cepheus; qcom; en_US; 194678458)",
+	"Instagram 150.0.0.33.120 Android (28/9.0; 440dpi; 1080x2280; Huawei; CLT-L29; HWCLT; kirin970; en_US; 212345678)",
+	"Instagram 60.0.0.16.75 Android (21/5.0.1; 320dpi; 720x1280; LG; LG-D855; g3; g3; en_US; 112233445)",
+	"Instagram 123.1.0.26.115 Android (30/11; 560dpi; 1440x3200; Samsung; SM-G988B; y2sxxx; exynos990; en_US; 334455667)",
+	"Instagram 118.0.0.28.122 Android (27/8.1.0; 480dpi; 1080x2160; OnePlus; ONEPLUS A5010; OnePlus5T; qcom; en_US; 556677889)",
+	"Instagram 105.0.0.18.119 Android (25/7.1.2; 480dpi; 1080x1920; Sony; G8141; maplemk; qcom; en_GB; 667788990)",
+	"Instagram 135.0.0.28.119 Android (26/8.0.0; 320dpi; 720x1440; Nokia; TA-1046; PL2_sprout; qcom; en_US; 778899001)",
+	"Instagram 84.0.0.21.214 Android (23/6.0; 320dpi; 720x1280; Motorola; XT1068; titan; qcom; en_US; 990011223)",
+	"Instagram 88.0.0.14.99 Android (24/7.0; 560dpi; 1440x2560; HTC; HTC_2PS620000; htc_pmeuhl; msm8996; en_US; 112244668)",
+	"Instagram 156.0.0.26.109 Android (29/10; 480dpi; 1080x2340; Oppo; CPH1917; CPH1917; qcom; en_US; 556644332)",
+	"Instagram 167.0.0.24.120 Android (30/11; 400dpi; 1080x1920; Google; Pixel 2 XL; taimen; qcom; en_US; 998877665)",
+	"Instagram 99.0.0.32.182 Android (26/8.0.0; 420dpi; 1080x2160; Asus; ZS620KL; ASUS_Z01RD; qcom; en_US; 776655443)",
+	"Instagram 110.0.0.16.119 Android (29/10; 320dpi; 720x1280; Vivo; vivo 1610; 1610; mt6755; en_US; 445566778)",
+	"Instagram 112.0.0.13.120 Android (28/9.0; 360dpi; 1080x1920; Huawei; PRA-LX1; HWPRA-H; kirin655; en_US; 112233445)",
+	"Instagram 113.0.0.39.122 Android (27/8.1.0; 480dpi; 1080x2160; Lenovo; L78011; Lenovo L78011; qcom; en_US; 998877661)",
+	"Instagram 90.0.0.18.118 Android (24/7.0; 640dpi; 1440x2560; Samsung; SM-G955F; dream2lte; samsungexynos8895; en_US; 365478912)",
+	"Instagram 92.0.0.15.114 Android (25/7.1.1; 560dpi; 1440x2560; LG; LG-H990; h990; h990; en_US; 451236897)",
+	"Instagram 80.0.0.14.110 Android (23/6.0; 320dpi; 720x1280; HTC; HTC Desire 626; htc_a32ul; mt6752; en_US; 342156789)",
+	"Instagram 155.0.0.37.107 Android (30/11; 480dpi; 1080x2340; Realme; RMX1971; RMX1971; qcom; en_US; 112233991)"
 	TIMEOUT      = 10 * time.Second
 	CURRENT_TIME = "2025-05-23 23:14:48"
 	CURRENT_USER = "monsmain"
