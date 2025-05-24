@@ -124,6 +124,7 @@ func tryLogin(username, password string) (bool, InstagramResponse) {
 	client, err := getTorClient()
 	if err != nil {
 		log.Printf("Error creating Tor client: %v\n", err)
+		fmt.Printf("Tor client error: %v\n", err)
 		return false, InstagramResponse{}
 	}
 
@@ -137,6 +138,7 @@ func tryLogin(username, password string) (bool, InstagramResponse) {
 	req, err := http.NewRequest("POST", loginUrl, strings.NewReader(data.Encode()))
 	if err != nil {
 		log.Printf("Error creating request: %v\n", err)
+		fmt.Printf("Request error: %v\n", err)
 		return false, InstagramResponse{}
 	}
 
@@ -150,6 +152,7 @@ func tryLogin(username, password string) (bool, InstagramResponse) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Error sending request: %v\n", err)
+		fmt.Printf("HTTP request error: %v\n", err)
 		return false, InstagramResponse{}
 	}
 	defer resp.Body.Close()
@@ -157,16 +160,18 @@ func tryLogin(username, password string) (bool, InstagramResponse) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Error reading response: %v\n", err)
+		fmt.Printf("Read body error: %v\n", err)
 		return false, InstagramResponse{}
 	}
 
+	// اینجا را اضافه کن
 	fmt.Printf("HTTP Status: %d\nRaw body: %s\n", resp.StatusCode, string(body))
 	log.Printf("HTTP Status: %d\nRaw body: %s\n", resp.StatusCode, string(body))
 
 	var response InstagramResponse
 	if err := json.Unmarshal(body, &response); err != nil {
 		log.Printf("Error parsing response: %v\n", err)
-		return false, InstagramResponse{}
+		fmt.Printf("JSON parse error: %v\n", err)
 	}
 
 	success := response.Status == "ok" ||
