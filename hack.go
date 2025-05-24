@@ -157,7 +157,6 @@ func waitGroupTimeout(wg *sync.WaitGroup, timeout time.Duration) <-chan struct{}
 	return done
 }
 
-// == نسخه بدون پراکسی ==
 func tryLoginSpecial(username, password string) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	data := url.Values{}
@@ -220,7 +219,6 @@ func tryLoginSpecial(username, password string) LoginResult {
 	}
 
 	bodyStr := string(body)
-	// باگ قبلی: اگر متن پاسخ JSON نبود، بیخود تلاش به Unmarshal نکن!
 	if !strings.HasPrefix(bodyStr, "{") {
 		log.Printf("Raw response: %s", bodyStr)
 		return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: bodyStr}
