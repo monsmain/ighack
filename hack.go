@@ -41,7 +41,7 @@ func main() {
 
 	fmt.Println("=== Instagram Login Tool ===")
 	fmt.Printf("Time: %s\n", CURRENT_TIME)
-	fmt.Printf("User: %s\n\n", CURRENT_USER)
+	fmt.Printf("Developer: %s\n\n", CURRENT_USER)
 
 	var username string
 	fmt.Print("Enter Instagram username: ")
