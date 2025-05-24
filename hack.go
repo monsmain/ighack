@@ -9,7 +9,6 @@ import (
     "net"
     "net/http"
     "os"
-    "os/exec"
     "strings"
     "time"
 
@@ -30,32 +29,13 @@ type InstagramResponse struct {
     } `json:"challenge"`
 }
 
-func startTor() error {
-    // Kill any running Tor process
-    exec.Command("pkill", "tor").Run()
-    time.Sleep(2 * time.Second)
-
-    // Start tor in background
-    cmd := exec.Command("tor")
-    // Optional: redirect output to a log file, or discard:
-    cmd.Stdout = os.Stdout
-    cmd.Stderr = os.Stderr
-    err := cmd.Start()
-    if err != nil {
-        return fmt.Errorf("Failed to start Tor: %v", err)
+func checkTor() bool {
+    conn, err := net.DialTimeout("tcp", "127.0.0.1:9050", 2*time.Second)
+    if err == nil {
+        conn.Close()
+        return true
     }
-    fmt.Println("Tor is starting... waiting for it to become ready (about 20sec)")
-    // Wait for Tor port to be open (max 20sec)
-    for i := 0; i < 20; i++ {
-        conn, _ := net.DialTimeout("tcp", "127.0.0.1:9050", time.Second)
-        if conn != nil {
-            conn.Close()
-            fmt.Println("Tor is ready on 127.0.0.1:9050")
-            return nil
-        }
-        time.Sleep(1 * time.Second)
-    }
-    return fmt.Errorf("Tor did not become ready in time!")
+    return false
 }
 
 func getTorClient() *http.Client {
@@ -71,12 +51,14 @@ func getTorClient() *http.Client {
 }
 
 func main() {
-    fmt.Println("=== Instagram Login Tool + TOR (Auto) ===")
+    fmt.Println("=== Instagram Login Tool + TOR (Manual Tor Mode) ===")
 
-    // --- Start Tor automatically
-    if err := startTor(); err != nil {
-        fmt.Println(err)
+    // فقط چک کن Tor اجرا شده یا نه
+    if !checkTor() {
+        fmt.Println("❌ Tor is NOT running! Please open a new session and run 'tor' command, then try again.")
         return
+    } else {
+        fmt.Println("✅ Tor is running on 127.0.0.1:9050")
     }
 
     fmt.Print("Enter Instagram username: ")
