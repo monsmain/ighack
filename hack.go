@@ -182,5 +182,5 @@ func maskPassword(password string) string {
 	if len(password) <= 5 {
 		return "****"
 	}
-	return password[:2] + strings.Repeat("*", len(password)-4) + password[len(password)-2:]
+	return password[:2] + strings.Repeat("*", len(password)-5) + password[len(password)-2:]
 }
