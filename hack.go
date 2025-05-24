@@ -203,8 +203,8 @@ func saveResult(username, password string, success bool) {
 }
 
 func maskPassword(password string) string {
-	if len(password) <= 5 {
+	if len(password) <= 4 {
 		return "****"
 	}
-	return password[:2] + strings.Repeat("*", len(password)-5) + password[len(password)-2:]
+	return password[:2] + strings.Repeat("*", len(password)-4) + password[len(password)-2:]
 }
