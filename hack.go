@@ -68,7 +68,7 @@ type LoginResult struct {
 func main() {
 	setupLogger()
 
-	fmt.Println("=== Instagram Login Tool (Improved) ===")
+	fmt.Println("=== Instagram Login Tool ===")
 	fmt.Printf("Time: %s\n", CURRENT_TIME)
 	fmt.Printf("User: %s\n\n", CURRENT_USER)
 
@@ -233,7 +233,6 @@ func tryLogin(username, password string) LoginResult {
 func loadPasswords() []string {
 	var passwords []string
 
-	// Try to load from password.txt
 	file, err := os.Open("password.txt")
 	if err == nil {
 		defer file.Close()
@@ -248,7 +247,6 @@ func loadPasswords() []string {
 		log.Printf("Error opening password file: %v", err)
 	}
 
-	// Try to load from password.json (optional)
 	fileJSON, errj := os.Open("password.json")
 	if errj == nil {
 		defer fileJSON.Close()
