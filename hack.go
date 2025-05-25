@@ -15,6 +15,15 @@ import (
 	"time"
 )
 
+func clearScreen() {
+	cmd := exec.Command("clear")
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/c", "cls")
+	}
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+}
+
 const (
 	API_URL      = "https://i.instagram.com/api/v1/"
 	TIMEOUT      = 10 * time.Second
