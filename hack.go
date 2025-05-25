@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"runtime"
+	"os/exec"
 )
 
 func clearScreen() {
