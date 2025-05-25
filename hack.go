@@ -13,18 +13,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"runtime"
-	"os/exec"
 )
-
-func clearScreen() {
-	cmd := exec.Command("clear")
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cmd", "/c", "cls")
-	}
-	cmd.Stdout = os.Stdout
-	cmd.Run()
-}
 
 const (
 	API_URL      = "https://i.instagram.com/api/v1/"
