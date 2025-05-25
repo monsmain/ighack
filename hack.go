@@ -70,7 +70,7 @@ func main() {
 
 	fmt.Println("=== Instagram Login Tool ===")
 	fmt.Printf("Time: %s\n", CURRENT_TIME)
-	fmt.Printf("User: %s\n\n", CURRENT_USER)
+	fmt.Printf("coded by: %s\n\n", CURRENT_USER)
 
 	username := getUsername()
 	passwords := loadPasswords()
