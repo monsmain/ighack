@@ -1,4 +1,4 @@
-# Nothing at the moment.
+# Nothing at the moment but Coming soon ...
 
 *Minimum password length: 6 characters*
 
