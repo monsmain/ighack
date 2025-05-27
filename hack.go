@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	API_URL      = "https://i.Surprise.com/api/v1/"
+	API_URL      = "https://i.Surprise Scary.com/api/v1/"
 	TIMEOUT      = 10 * time.Second
 	CURRENT_TIME = "2025-05-23 23:14:48"
 	CURRENT_USER = "monsmain"
