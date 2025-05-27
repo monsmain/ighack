@@ -1,9 +1,8 @@
 # Nothing at the moment but Coming soon ... boomb
 
 *Minimum password length: 6 characters*
-
 *maximum Password Password: 64 characters*
-
+---
 # ❤️ Donate ❤️
 #### USDT TRC20: `TUbfZzk65ABHceGhYjP6RLfALczsFfBW3q`
 #### Tron: `TUbfZzk65ABHceGhYjP6RLfALczsFfBW3q`
