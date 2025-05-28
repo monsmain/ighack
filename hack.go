@@ -126,7 +126,7 @@ func main() {
 		go func() {
 			defer wg.Done()
 			for password := range jobs {
-				res := tryLogin(username, password)
+				res := tryLogin(username, password, useTor)
 				progress <- 1
 				if res.Success {
 					select {
