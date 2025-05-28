@@ -33,17 +33,21 @@ pkg install tor -y && pkg install libexecinfo -y
 ```
 ## قدم چهارم: ساخت ماژول
 ```
-go mod init monsmain/test-hack && go get golang.org/x/net/proxy -y
+go mod init monsmain/ighack
 ```
-## قدم پنجم:کپی کردن فایل در دستگاه
+## قدم پنجم: نصب proxy
+```
+go get golang.org/x/net/proxy
+```
+## قدم شش:کپی کردن فایل در دستگاه
 ```
 git clone https://github.com/monsmain/ighack
 ```
-## قدم شش: فراخوانی
+## قدم هفت: فراخوانی
 ```
 cd ighack
 ```
-## قدم هفتم:در صورت استفاده از tor باید یک new session جدید باز کنید و " tor " را بنویسید و صبر کنید تا 100% (done) دیده شود ،سپس به صفحه قبل برگردید.
+## قدم هشت:در صورت استفاده از tor باید یک new session جدید باز کنید و " tor " را بنویسید و صبر کنید تا 100% (done) دیده شود ،سپس به صفحه قبل برگردید.
 ## ⚠️ در صورت اتصال مستقیم یا استفاده از vpn  این گزینه رو انجام ندید.⚠️
 
 ## قدم آخر: اجرای آن
