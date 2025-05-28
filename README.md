@@ -1,5 +1,5 @@
 <div align="center">
-    <h1>hack  bruteforce instagram</h1>
+    <h1>Hack Bruteforce Instagram</h1>
 </div>
 
 <div align="center">
