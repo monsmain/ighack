@@ -306,14 +306,14 @@ type LoginResult struct {
 func tryLogin(username, password string, useTor bool) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	dev := randomDeviceInfo()
-	data := url.Values{}
-	data.Set("username", username)
-	data.Set("password", password)
-	data.Set("device_id", dev.deviceID)
-	data.Set("adid", dev.adid)
-	data.Set("guid", dev.guid)
-	data.Set("phone_id", dev.phoneID)
-	data.Set("login_attempt_count", fmt.Sprintf("%d", rand.Intn(3)))
+        data := url.Values{}
+        data.Set("username", username)
+        data.Set("enc_password", fmt.Sprintf("#PWD_INSTAGRAM_BROWSER:0:%d:%s", time.Now().Unix(), password))
+        data.Set("device_id", dev.deviceID)
+        data.Set("uuid", dev.guid)
+        data.Set("adid", dev.adid)
+        data.Set("phone_id", dev.phoneID)
+        data.Set("login_attempt_count", fmt.Sprintf("%d", rand.Intn(3)))
 
 	var client *http.Client
 	if useTor {
