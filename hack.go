@@ -25,28 +25,9 @@ const (
 )
 
 var userAgents = []string{
-	"Instagram 360.0.0.52.192 Android (28/9; 239dpi; 720x1280; google; G011A; G011A; intel; in_ID; 672535977",
 	"Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743",
 	"Instagram 329.0.0.29.120 Android (31/12; 420dpi; 1080x2400; samsung; SM-A515F; a51; exynos9611; en_US; 329000029)",
 	"Instagram 328.0.0.13.119 Android (31/12; 480dpi; 1080x2400; samsung; SM-A715F; a71; qcom; en_US; 328000013)",
-	"Instagram 327.0.0.17.64 Android (30/11; 440dpi; 1080x2340; Xiaomi; Mi 9T; davinci; qcom; en_US; 327000017)",
-	"Instagram 326.0.0.13.109 Android (29/10; 420dpi; 1080x2340; Google; Pixel 4a; sunfish; qcom; en_US; 326000013)",
-	"Instagram 325.0.0.15.110 Android (30/11; 480dpi; 1080x2400; Xiaomi; Redmi Note 10 Pro; sweet; qcom; en_US; 325000015)",
-	"Instagram 324.0.0.22.99 Android (31/12; 440dpi; 1080x2340; OnePlus; DN2103; OnePlusNord2T; mt6877; en_US; 324000022)",
-	"Instagram 323.0.0.20.66 Android (30/11; 480dpi; 1080x2400; Samsung; SM-A325F; a32; qcom; en_US; 323000020)",
-	"Instagram 322.0.0.16.170 Android (30/11; 480dpi; 1080x2340; Xiaomi; M2007J3SY; apollon; qcom; en_US; 322000016)",
-	"Instagram 321.0.0.13.113 Android (29/10; 420dpi; 1080x2340; Samsung; SM-G973F; beyond1; exynos9820; en_US; 321000013)",
-	"Instagram 320.0.0.18.118 Android (31/12; 420dpi; 1080x2340; Xiaomi; Mi 10T Pro; apollo; qcom; en_US; 320000018)",
-	"Instagram 319.0.0.31.119 Android (31/12; 480dpi; 1080x2400; Samsung; SM-G991B; o1q; exynos2100; en_US; 319000031)",
-	"Instagram 318.0.0.14.109 Android (30/11; 440dpi; 1080x2340; Xiaomi; Mi 11 Lite; courbet; qcom; en_US; 318000014)",
-	"Instagram 317.0.0.20.170 Android (30/11; 480dpi; 1080x2340; Samsung; SM-A525F; a52; qcom; en_US; 317000020)",
-	"Instagram 316.0.0.20.170 Android (30/11; 480dpi; 1080x2400; Xiaomi; Redmi Note 8 Pro; begonia; mt6785; en_US; 316000020)",
-	"Instagram 315.0.0.34.119 Android (31/12; 480dpi; 1080x2340; Samsung; SM-M526B; m52x; qcom; en_US; 315000034)",
-	"Instagram 314.0.0.34.119 Android (29/10; 420dpi; 1080x2340; OnePlus; ONEPLUS A6013; OnePlus6T; qcom; en_US; 314000034)",
-	"Instagram 313.0.0.34.119 Android (30/11; 440dpi; 1080x2340; Google; Pixel 5; redfin; qcom; en_US; 313000034)",
-	"Instagram 312.0.0.12.119 Android (31/12; 480dpi; 1080x2400; Samsung; SM-A715F; a71; qcom; en_US; 312000012)",
-	"Instagram 311.0.0.12.119 Android (31/12; 420dpi; 1080x2340; Xiaomi; Mi 9T; davinci; qcom; en_US; 311000012)",
-	"Instagram 310.0.0.21.119 Android (30/11; 480dpi; 1080x2400; Xiaomi; M2101K6G; curtana; qcom; en_US; 310000021)",
 }
 
 type InstagramResponse struct {
