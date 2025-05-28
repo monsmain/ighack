@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
 	"time"
-        "io/ioutil"
 	"golang.org/x/net/proxy"
 )
 
@@ -49,11 +50,32 @@ type LoginResult struct {
 }
 
 func main() {
+	// === نمایش آی‌پی پابلیک مستقیم و آی‌پی از طریق تور ===
+	fmt.Println("Checking Public IPs...\n")
 
-        res, _ := http.Get("https://api.ipify.org")
-        ip, _ := ioutil.ReadAll(res.Body)
-        os.Stdout.Write(ip)
-//////////////////////////////////////////
+	// 1. آی‌پی پابلیک مستقیم
+	ipDirect, err := getPublicIP(&http.Client{Timeout: 10 * time.Second})
+	if err != nil {
+		fmt.Println("Error getting direct IP:", err)
+	} else {
+		fmt.Println("[Direct] Public IP:", ipDirect)
+	}
+
+	// 2. آی‌پی پابلیک از طریق TOR
+	ipTor, torOK := getTorIP()
+	if torOK {
+		fmt.Println("[TOR]    Public IP:", ipTor)
+		if ipDirect != ipTor {
+			fmt.Println("TOR is working (IP changed)\n")
+		} else {
+			fmt.Println("TOR is NOT working (IP did not change)\n")
+		}
+	} else {
+		fmt.Println("[TOR]    Unable to connect through TOR. (TOR is NOT working)\n")
+	}
+
+	//////////////////////////////////////////////////////
+
 	setupLogger()
 	fmt.Println("=== Instagram Login Tool ===")
 	fmt.Printf("Time: %s\n", CURRENT_TIME)
@@ -120,6 +142,39 @@ func main() {
 	}
 }
 
+// تابع گرفتن آی‌پی پابلیک
+func getPublicIP(client *http.Client) (string, error) {
+	resp, err := client.Get("https://api.ipify.org")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	ip, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(ip), nil
+}
+
+// تابع گرفتن آی‌پی از طریق TOR
+func getTorIP() (string, bool) {
+	socksProxy := "127.0.0.1:9050"
+	dialer, err := proxy.SOCKS5("tcp", socksProxy, nil, proxy.Direct)
+	if err != nil {
+		return "", false
+	}
+	transport := &http.Transport{Dial: dialer.Dial}
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   15 * time.Second,
+	}
+	ip, err := getPublicIP(client)
+	if err != nil {
+		return "", false
+	}
+	return ip, true
+}
+
 func setupLogger() {
 	logFile, err := os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err == nil {
@@ -159,7 +214,7 @@ func waitGroupTimeout(wg *sync.WaitGroup, timeout time.Duration) <-chan struct{}
 	return done
 }
 
-// This function now uses Tor SOCKS5 proxy for HTTP requests.
+// این تابع همچنان از TOR برای login استفاده می‌کند
 func tryLogin(username, password string) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	data := url.Values{}
@@ -167,7 +222,6 @@ func tryLogin(username, password string) LoginResult {
 	data.Set("password", password)
 	data.Set("device_id", fmt.Sprintf("android-%d", time.Now().UnixNano()))
 
-	// Set up Tor SOCKS5 proxy
 	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
 	if err != nil {
 		log.Printf("Failed to obtain Tor SOCKS5 proxy: %v\n", err)
@@ -276,13 +330,6 @@ func saveResultJSON(result LoginResult) {
 
 func trim(s string) string {
 	return strings.TrimSpace(s)
-}
-
-func maskPassword(password string) string {
-	if len(password) <= 4 {
-		return "****"
-	}
-	return password[:2] + strings.Repeat("*", len(password)-4) + password[len(password)-2:]
 }
 
 func printProgress(current, total int) {
