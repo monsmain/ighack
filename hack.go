@@ -234,15 +234,16 @@ func tryLogin(username, password string) LoginResult {
 	data.Set("password", password)
 	data.Set("device_id", fmt.Sprintf("android-%d", time.Now().UnixNano()))
 
+	var client *http.Client
 	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
 	if err != nil {
-		log.Printf("Failed to obtain Tor SOCKS5 proxy: %v\n", err)
-		return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "Tor SOCKS5 proxy error"}
-	}
-	transport := &http.Transport{Dial: dialer.Dial}
-	client := &http.Client{
-		Transport: transport,
-		Timeout:   TIMEOUT,
+		// اگر TOR ران نبود، اتصال مستقیم (یا VPN) استفاده می‌شود.
+		fmt.Println("TOR فعال نیست، اتصال مستقیم (یا VPN) استفاده می‌شود.")
+		client = &http.Client{Timeout: TIMEOUT}
+	} else {
+		transport := &http.Transport{Dial: dialer.Dial}
+		client = &http.Client{Transport: transport, Timeout: TIMEOUT}
+		fmt.Println("اتصال از طریق TOR برقرار شد.")
 	}
 
 	req, err := http.NewRequest("POST", loginUrl, strings.NewReader(data.Encode()))
