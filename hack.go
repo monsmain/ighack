@@ -31,6 +31,8 @@ var userAgents = []string{
         "Instagram 330.0.0.23.108 Android (31/12; 480dpi; 1080x2400; samsung; SM-A525F; a52; qcom; en_US; 330002310)",
         "Instagram 330.0.0.23.108 Android (30/11; 420dpi; 1080x2340; Xiaomi; M2007J20CG; gauguin; qcom; en_US; 330002310)",
         "Instagram 327.0.0.20.123 Android (30/11; 420dpi; 1080x2400; realme; RMX3371; RMX3371; qcom; en_US; 327000020)",
+        "Instagram 141.0.0.17.118 Android (29/10; 450dpi; 1080x2192; samsung; SM-G986U; y2q; qcom; en_US; 213368022)",
+
 
 }
 
