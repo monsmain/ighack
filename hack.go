@@ -92,9 +92,9 @@ func main() {
 		} else {
 			fmt.Println("TOR is NOT working (IP did not change)\n")
 		}
-	} else {
+	        } else {
 		fmt.Println("[TOR]    Unable to connect through TOR. (TOR is NOT working)\n")
-	}
+	        }
 
 	username := getUsername()
 	passwords := loadPasswords()
