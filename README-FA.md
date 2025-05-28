@@ -35,7 +35,7 @@ pkg install tor -y && pkg install libexecinfo -y
 ```
 go mod init monsmain/test-hack && go get golang.org/x/net/proxy -y
 ```
-## قدم پنجم:کپی کردن فایل بمبر در دستگاه
+## قدم پنجم:کپی کردن فایل در دستگاه
 ```
 git clone https://github.com/monsmain/ighack
 ```
