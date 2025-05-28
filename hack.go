@@ -64,9 +64,8 @@ func main() {
 	clearTerminal()
 
 	setupLogger()
-	fmt.Println("Instagram Login Tool")
+	fmt.Println(" ***Instagram Login Tool*** ")
 	fmt.Printf("coded by: %s\n\n", CURRENT_USER)
-
 	fmt.Println("Checking Public IPs...\n")
 	ipDirect, err := getPublicIP(&http.Client{Timeout: 10 * time.Second})
 	if err != nil {
