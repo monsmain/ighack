@@ -15,11 +15,10 @@
 </div>
 
 ## 📥Download Termux for Android:
-| Source |Download Links
- |
+| Source | Download Links
 |:--------:| -------------:|
 | GitHub 🐈‍⬛|[Get it Now](https://github.com/termux/termux-app/releases)|
-| Google Play|[Get it Now](https://play.google.com/store/apps/details?id=com.termux)|                    
+| Google Play|[Get it Now](https://play.google.com/store/apps/details?id=com.termux)|                 
 > It is recommended to install from GitHub.
 
 ## Supported on: (Tested)
