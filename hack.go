@@ -100,11 +100,17 @@ func main() {
 		useTor = true
 	}
 
-	if useTor {
-		fmt.Println("The connection was established via TOR.\n")
-	} else {
-		fmt.Println("TOR is not enabled, direct connection is used.\n")
-	}
+useTor := false
+dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
+if err == nil {
+    useTor = true
+}
+
+if useTor {
+    fmt.Println("The connection was established via TOR.\n")
+} else {
+    fmt.Println("TOR is not enabled, direct connection is used.\n")
+}
 
 	username := getUsername()
 	passwords := loadPasswords()
