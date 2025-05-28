@@ -94,13 +94,12 @@ func main() {
 		fmt.Println("[TOR]    Unable to connect through TOR. (TOR is NOT working)\n")
 	}
 
-	// فقط یک بار انتخاب اتصال
 	useTor := torOK
 
 	if useTor {
-		fmt.Println("The connection was established via TOR.\n")
+		fmt.Println("tor is active...\n")
 	} else {
-		fmt.Println("The connection was established directly (or via VPN).\n")
+		fmt.Println("TOR is not active , direct connection is active\n")
 	}
 
 	username := getUsername()
