@@ -25,8 +25,6 @@ const (
 
 var userAgents = []string{
 	"Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743",
-	"Instagram 329.0.0.29.120 Android (31/12; 420dpi; 1080x2400; samsung; SM-A515F; a51; exynos9611; en_US; 329000029)",
-	"Instagram 328.0.0.13.119 Android (31/12; 480dpi; 1080x2400; samsung; SM-A715F; a71; qcom; en_US; 328000013)",
 }
 
 type InstagramResponse struct {
@@ -48,10 +46,8 @@ type LoginResult struct {
 }
 
 func main() {
-	// === نمایش آی‌پی پابلیک مستقیم و آی‌پی از طریق تور ===
 	fmt.Println("Checking Public IPs...\n")
 
-	// 1. آی‌پی پابلیک مستقیم
 	ipDirect, err := getPublicIP(&http.Client{Timeout: 10 * time.Second})
 	if err != nil {
 		fmt.Println("Error getting direct IP:", err)
@@ -59,7 +55,6 @@ func main() {
 		fmt.Println("[Direct] Public IP:", ipDirect)
 	}
 
-	// 2. آی‌پی پابلیک از طریق TOR
 	ipTor, torOK := getTorIP()
 	if torOK {
 		fmt.Println("[TOR]    Public IP:", ipTor)
@@ -72,7 +67,6 @@ func main() {
 		fmt.Println("[TOR]    Unable to connect through TOR. (TOR is NOT working)\n")
 	}
 
-	//////////////////////////////////////////////////////
 
 	setupLogger()
 	fmt.Println("=== Instagram Login Tool ===")
@@ -140,7 +134,6 @@ func main() {
 	}
 }
 
-// تابع گرفتن آی‌پی پابلیک
 func getPublicIP(client *http.Client) (string, error) {
 	resp, err := client.Get("https://api.ipify.org")
 	if err != nil {
@@ -154,7 +147,6 @@ func getPublicIP(client *http.Client) (string, error) {
 	return string(ip), nil
 }
 
-// تابع گرفتن آی‌پی از طریق TOR
 func getTorIP() (string, bool) {
 	socksProxy := "127.0.0.1:9050"
 	dialer, err := proxy.SOCKS5("tcp", socksProxy, nil, proxy.Direct)
@@ -212,7 +204,6 @@ func waitGroupTimeout(wg *sync.WaitGroup, timeout time.Duration) <-chan struct{}
 	return done
 }
 
-// این تابع همچنان از TOR برای login استفاده می‌کند
 func tryLogin(username, password string) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	data := url.Values{}
