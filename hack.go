@@ -95,6 +95,18 @@ func main() {
 	        } else {
 		fmt.Println("[TOR]    Unable to connect through TOR. (TOR is NOT working)\n")
 	        }
+useTor := false
+	// امتحان کنیم آیا TOR واقعاً در tryLogin جواب می‌دهد یا نه:
+	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
+	if err == nil && torOK {
+		useTor = true
+	}
+
+	if useTor {
+		fmt.Println("The connection was established via TOR.\n")
+	} else {
+		fmt.Println("The connection was established directly (or via VPN).\n")
+	}
 
 	username := getUsername()
 	passwords := loadPasswords()
