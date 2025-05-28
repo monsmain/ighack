@@ -64,7 +64,7 @@ go run hack.go
 ```
 > *Guide*
 
-> 1: After running the above commands, enter the desired 'enter Instagram username' when prompted at username and press Enter.
+> 1: After running the above commands, enter the desired username when prompted at "enter Instagram username: and press Enter.
 
 > 2: In the next step, wait for it to find the account password.
 
