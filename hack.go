@@ -63,6 +63,10 @@ func clearTerminal() {
 func main() {
 	clearTerminal()
 
+	setupLogger()
+	fmt.Println("Instagram Login Tool")
+	fmt.Printf("coded by: %s\n\n", CURRENT_USER)
+
 	fmt.Println("Checking Public IPs...\n")
 	ipDirect, err := getPublicIP(&http.Client{Timeout: 10 * time.Second})
 	if err != nil {
@@ -82,10 +86,6 @@ func main() {
 	} else {
 		fmt.Println("[TOR]    Unable to connect through TOR. (TOR is NOT working)\n")
 	}
-
-	setupLogger()
-	fmt.Println("Instagram Login Tool")
-	fmt.Printf("coded by: %s\n\n", CURRENT_USER)
 
 	username := getUsername()
 	passwords := loadPasswords()
