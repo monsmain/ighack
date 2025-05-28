@@ -13,7 +13,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-
+        "io/ioutil"
 	"golang.org/x/net/proxy"
 )
 
@@ -49,6 +49,11 @@ type LoginResult struct {
 }
 
 func main() {
+
+        res, _ := http.Get("https://api.ipify.org")
+        ip, _ := ioutil.ReadAll(res.Body)
+        os.Stdout.Write(ip)
+//////////////////////////////////////////
 	setupLogger()
 	fmt.Println("=== Instagram Login Tool ===")
 	fmt.Printf("Time: %s\n", CURRENT_TIME)
