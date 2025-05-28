@@ -1,5 +1,4 @@
 package main
-
 import (
 	"bufio"
 	"context"
@@ -23,8 +22,8 @@ const (
 	API_URL      = "https://i.instagram.com/api/v1/"
 	TIMEOUT      = 10 * time.Second
 	CURRENT_USER = "monsmain"
-	RATE_LIMIT   = time.Second // 1 request per second per worker
-	WORKER_COUNT = 2           // can be configurable
+	RATE_LIMIT   = time.Second 
+	WORKER_COUNT = 2     
 )
 
 var userAgents = []string{
@@ -126,7 +125,6 @@ func main() {
 
 	jobs := make(chan string, len(passwords))
 
-	// Rate-limited worker pool
 	for i := 0; i < WORKER_COUNT; i++ {
 		wg.Add(1)
 		go func(workerId int) {
@@ -149,7 +147,7 @@ func main() {
 						case found <- res:
 						default:
 						}
-						cancel() // cancel context for all workers
+						cancel() 
 						return
 					}
 				}
