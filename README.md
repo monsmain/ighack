@@ -5,7 +5,6 @@
         <a href="README-FA.md">
             <small>فارسی</small>
             <img src='assets/img/flags/iran.svg' />
-        </a>
 
 
 
