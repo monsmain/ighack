@@ -20,7 +20,6 @@ import (
 const (
 	API_URL      = "https://i.instagram.com/api/v1/"
 	TIMEOUT      = 10 * time.Second
-	CURRENT_TIME = "2025-05-23 23:14:48"
 	CURRENT_USER = "monsmain"
 )
 
@@ -71,7 +70,6 @@ func main() {
 
 	setupLogger()
 	fmt.Println("=== Instagram Login Tool ===")
-	fmt.Printf("Time: %s\n", CURRENT_TIME)
 	fmt.Printf("coded by: %s\n\n", CURRENT_USER)
 
 	username := getUsername()
