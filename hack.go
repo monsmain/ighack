@@ -237,13 +237,12 @@ func tryLogin(username, password string) LoginResult {
 	var client *http.Client
 	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
 	if err != nil {
-		// اگر TOR ران نبود، اتصال مستقیم (یا VPN) استفاده می‌شود.
-		fmt.Println("TOR فعال نیست، اتصال مستقیم (یا VPN) استفاده می‌شود.")
+		fmt.Println("TOR is not enabled, direct connection is used.")
 		client = &http.Client{Timeout: TIMEOUT}
 	} else {
 		transport := &http.Transport{Dial: dialer.Dial}
 		client = &http.Client{Transport: transport, Timeout: TIMEOUT}
-		fmt.Println("اتصال از طریق TOR برقرار شد.")
+		fmt.Println("The connection was established via TOR.")
 	}
 
 	req, err := http.NewRequest("POST", loginUrl, strings.NewReader(data.Encode()))
