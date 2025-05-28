@@ -84,7 +84,6 @@ func main() {
                                                                                           
 `
 	fmt.Println(banner)	
- )
 
 
 	setupLogger()
