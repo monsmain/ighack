@@ -4,10 +4,10 @@
     <p>
         <a href="README-FA.md">
             <small>فارسی</small>
-            <img src='[images/Flag-iran.png)' alt='persian' style='width: 20px;height: 15px;border-radius: 3px;' />
+            <img src='[main/images/Flag-iran.png)' alt='persian' style='width: 20px;height: 15px;border-radius: 3px;' />
         </a>
         | 
-       <img src='assets/img/flags/gb.svg' alt='English' style='width: 20px;height: 15px;border-radius: 3px;' />
+       <img src='[https://github.com/monsmain/test-hack/blob/main/images/flag-en.png)' alt='English' style='width: 20px;height: 15px;border-radius: 3px;' />
         <small>English</small>
     </p>
 
