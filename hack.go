@@ -65,8 +65,6 @@ func main() {
 	clearTerminal()
 
 	fmt.Println("Checking Public IPs...\n")
-
-	// 1. آی‌پی پابلیک مستقیم
 	ipDirect, err := getPublicIP(&http.Client{Timeout: 10 * time.Second})
 	if err != nil {
 		fmt.Println("Error getting direct IP:", err)
@@ -74,7 +72,6 @@ func main() {
 		fmt.Println("[Direct] Public IP:", ipDirect)
 	}
 
-	// 2. آی‌پی پابلیک از طریق TOR
 	ipTor, torOK := getTorIP()
 	if torOK {
 		fmt.Println("[TOR]    Public IP:", ipTor)
@@ -88,7 +85,7 @@ func main() {
 	}
 
 	setupLogger()
-	fmt.Println("=== Instagram Login Tool ===")
+	fmt.Println("Instagram Login Tool")
 	fmt.Printf("coded by: %s\n\n", CURRENT_USER)
 
 	username := getUsername()
@@ -152,7 +149,6 @@ func main() {
 	}
 }
 
-// تابع گرفتن آی‌پی پابلیک
 func getPublicIP(client *http.Client) (string, error) {
 	resp, err := client.Get("https://api.ipify.org")
 	if err != nil {
@@ -166,7 +162,6 @@ func getPublicIP(client *http.Client) (string, error) {
 	return string(ip), nil
 }
 
-// تابع گرفتن آی‌پی از طریق TOR
 func getTorIP() (string, bool) {
 	socksProxy := "127.0.0.1:9050"
 	dialer, err := proxy.SOCKS5("tcp", socksProxy, nil, proxy.Direct)
@@ -224,7 +219,6 @@ func waitGroupTimeout(wg *sync.WaitGroup, timeout time.Duration) <-chan struct{}
 	return done
 }
 
-// این تابع همچنان از TOR برای login استفاده می‌کند
 func tryLogin(username, password string) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	data := url.Values{}
