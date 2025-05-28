@@ -1,5 +1,4 @@
 package main
-
 import (
 	"bufio"
 	"encoding/json"
@@ -14,9 +13,8 @@ import (
 	"sync"
 	"time"
 	"golang.org/x/net/proxy"
-
-    "os/exec"
-    "runtime"
+        "os/exec"
+        "runtime"
 )
 
 const (
@@ -70,7 +68,6 @@ func main() {
 	} else {
 		fmt.Println("[TOR]    Unable to connect through TOR. (TOR is NOT working)\n")
 	}
-
 
 	setupLogger()
 	fmt.Println("=== Instagram Login Tool ===")
@@ -139,7 +136,6 @@ func main() {
 }
 
 func clearTerminal() {
-    // برای لینوکس و مک
     if strings.Contains(strings.ToLower(runtime.GOOS), "windows") {
         cmd := exec.Command("cmd", "/c", "cls")
         cmd.Stdout = os.Stdout
@@ -150,7 +146,6 @@ func clearTerminal() {
         cmd.Run()
     }
 }
-
 
 func getPublicIP(client *http.Client) (string, error) {
 	resp, err := client.Get("https://api.ipify.org")
