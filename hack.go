@@ -150,10 +150,9 @@ func main() {
 
 	select {
 	case res := <-found:
-		//change ftm 3 jaye 1 _3 jaye 
-		fmt.Printf("\n✅ PASSWORD FOUND: %s\n", res.Password)
+		fmt.Println("✅ The correct password was found! (2FA/Challenge Required)")
 		fmt.Printf("Username: %s\n", username)
-		fmt.Println("✅ Password is correct! (2FA/Challenge Required)")
+		fmt.Printf("\n✅ Correct password: %s\n", res.Password)
 		saveResultJSON(res)
 	case <-waitGroupTimeout(&wg, 60*time.Minute):
 		fmt.Println("\n❌ Password not found.")
