@@ -12,6 +12,8 @@
        <img src='images/flag-en.png' alt='English' style='width: 20px;height: 15px;border-radius: 3px;' />
         <small>English</small>
     </p>
+<h3>viewers:</h3> <br> <img src="https://profile-counter.glitch.me/monsmain/count.svg" alt="Visitors"><p align="center"> <br><img src="https://github.com/NiREvil/workers-cloudflare/blob/main/Other/pics/snake.svg" width="1280px">
+
 </div>
 
 ## 📥Download Termux for Android:
