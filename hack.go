@@ -1,5 +1,4 @@
 package main
-
 import (
 	"bufio"
 	"compress/gzip"
@@ -18,7 +17,6 @@ import (
 	"time"
 	"golang.org/x/net/proxy"
 )
-
 const (
 	API_URL            = "https://i.instagram.com/api/v1/"
 	TIMEOUT            = 20 * time.Second
@@ -31,7 +29,7 @@ const (
 )
 
 var userAgents = []string{
-	// Real Android User-Agents
+	//Android
 	"Instagram 371.0.0.36.89 Android (33/14; 420dpi; 1080x2340; samsung; SM-A546E; a54; qcom; en_US; 706838827)",
 	"Instagram 370.0.0.26.109 Android (32/12; 440dpi; 1080x2400; Xiaomi; M2101K6G; sweet; qcom; en_US; 703402950)",
 	"Instagram 360.0.0.52.192 Android (28/9; 239dpi; 720x1280; google; G011A; G011A; intel; in_ID; 672535977)",
@@ -39,7 +37,7 @@ var userAgents = []string{
 	"Instagram 318.0.7.22.109 Android (29/10; 320dpi; 720x1384; samsung; SM-G960W; starqltecs; qcom; en_CA; 690234910)",
 	"Instagram 365.0.0.40.94 Android (34/14; 450dpi; 1080x2301; samsung; SM-A146U; a14xm; mt6833; en_US; 690234900; IABMV/1)",
 	"Instagram 365.0.0.40.94 Android (34/14; 420dpi; 1080x2115; samsung; SM-G990W; r9q; qcom; en_CA; 690234877)",
-	// Real iOS User-Agents
+	//iOS
 	"Instagram 235.1.0.24.107 (iPhone12,1; iOS 18_1_1; en_US; en-US; scale=2.21; 828x1792; 370368062) NW/3",
 	"Instagram 279.0.0.17.112 (iPhone12,5; iOS 18_1_1; en_US; en-US; scale=3.00; 1242x2688; 465757305)",
 	"Instagram 313.0.2.9.339 (iPad7,6; iOS 14_7_1; en_US; en; scale=2.00; 750x1334; 553462334)",
@@ -226,7 +224,6 @@ func waitGroupTimeout(wg *sync.WaitGroup, timeout time.Duration) <-chan struct{}
 	return done
 }
 
-// --- Device & Header Logic --- //
 type deviceInfo struct {
 	deviceID   string
 	androidID  string
@@ -268,7 +265,7 @@ func buildHeaders(dev deviceInfo) map[string]string {
 		"Content-Type":              "application/x-www-form-urlencoded; charset=UTF-8",
 		"Accept":                    "*/*",
 		"Accept-Language":           "en-US",
-		"Accept-Encoding":           "gzip, deflate, br", // <--- gzip enabled
+		"Accept-Encoding":           "gzip, deflate, br", 
 		"X-IG-Capabilities":         "3brTvw==",
 		"X-IG-Connection-Type":      "WIFI",
 		"X-IG-App-ID":               IG_APP_ID,
@@ -283,7 +280,6 @@ func buildHeaders(dev deviceInfo) map[string]string {
 	}
 }
 
-// --- Instagram Logic --- //
 type InstagramResponse struct {
 	Status     string `json:"status"`
 	Message    string `json:"message"`
@@ -306,7 +302,6 @@ func tryLogin(username, password string, useTor bool) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	dev := randomDeviceInfo()
 	data := url.Values{}
-	// IMPORTANT: Use enc_password for Instagram login
 	data.Set("username", username)
 	data.Set("enc_password", fmt.Sprintf("#PWD_INSTAGRAM_BROWSER:0:%d:%s", time.Now().Unix(), password))
 	data.Set("device_id", dev.deviceID)
@@ -335,7 +330,6 @@ func tryLogin(username, password string, useTor bool) LoginResult {
 		return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "Request error"}
 	}
 
-	// Add all advanced headers
 	for k, v := range buildHeaders(dev) {
 		req.Header.Set(k, v)
 	}
