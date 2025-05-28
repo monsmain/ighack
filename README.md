@@ -52,7 +52,7 @@ git clone https://github.com/monsmain/ighack
 ```
 cd ighack
 ```
-## Step 7: If you're using tor, you must open a new session, type "tor" then return to the previous screen.
+## Step 7: If you are using Tor, you need to open a new session, type "tor" and wait until it shows 100% (done), then return to the previous page.
 ## ⚠️ Skip this step if you are using a direct connection or a VPN. ⚠️
 ## Final Step: Run It
 ```
