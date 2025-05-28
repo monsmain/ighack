@@ -42,17 +42,21 @@ pkg install tor -y && pkg install libexecinfo -y
 ```
 ## Step 4: Create a Module
 ```
-go mod init monsmain/test-hack && go get golang.org/x/net/proxy -y
+go mod init monsmain/ighack
 ```
-## Step 5: Clone the File to Your Device
+## step 5: Install proxy
+```
+go get golang.org/x/net/proxy
+```
+## Step 6: Clone the File to Your Device
 ```
 git clone https://github.com/monsmain/ighack
 ```
-## Step 6: Call It
+## Step 7: Call It
 ```
 cd ighack
 ```
-## Step 7: If you are using Tor, you need to open a new session, type "tor" and wait until it shows 100% (done), then return to the previous page.
+## Step 8: If you are using Tor, you need to open a new session, type "tor" and wait until it shows 100% (done), then return to the previous page.
 ## ⚠️ Skip this step if you are using a direct connection or a VPN. ⚠️
 ## Final Step: Run It
 ```
