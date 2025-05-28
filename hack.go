@@ -69,7 +69,6 @@ type LoginResult struct {
 
 func main() {
 	setupLogger()
-        checkTorIP()
 	fmt.Println("=== Instagram Login Tool ===")
 	fmt.Printf("Time: %s\n", CURRENT_TIME)
 	fmt.Printf("coded by: %s\n\n", CURRENT_USER)
@@ -133,23 +132,6 @@ func main() {
 			Message:  "Not found",
 		})
 	}
-}
-
-func checkTorIP() {
-    dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9050", nil, proxy.Direct)
-    if err != nil {
-        log.Fatalf("Failed to obtain Tor SOCKS5 proxy: %v", err)
-    }
-    transport := &http.Transport{Dial: dialer.Dial}
-    client := &http.Client{Transport: transport, Timeout: 10 * time.Second}
-
-    resp, err := client.Get("https://api.ipify.org?format=text")
-    if err != nil {
-        log.Fatalf("Error fetching IP: %v", err)
-    }
-    defer resp.Body.Close()
-    ip, _ := io.ReadAll(resp.Body)
-    fmt.Printf("Your Tor IP is: %s\n", ip)
 }
 
 func setupLogger() {
