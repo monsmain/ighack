@@ -84,7 +84,7 @@ If you're interested in contributing to the ighack project, you can fork the rep
 
 # Disclaimer
  **Usage Responsibility:**
-*The developer of this program takes no responsibility for how users choose to use it. Whether the usage is legal or ethical is entirely the responsibility of the user.*
+** The developer of this program takes no responsibility for how users choose to use it. Whether the usage is legal or ethical is entirely the responsibility of the user.
 
 * We are not liable for any misuse, damage, legal issues, or negative consequences arising from improper or unauthorized use of this code.
 
