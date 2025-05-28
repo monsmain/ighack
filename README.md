@@ -2,7 +2,7 @@
 
 <div align="center">
     <p>
-        <a href="README-fa.md">
+        <a href="README-FA.md">
             <small>فارسی</small>
             <img src='assets/img/flags/iran.svg' alt='persian' style='width: 20px;height: 15px;border-radius: 3px;' />
         </a>
