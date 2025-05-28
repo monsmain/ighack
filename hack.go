@@ -103,7 +103,7 @@ func main() {
 	if useTor {
 		fmt.Println("The connection was established via TOR.\n")
 	} else {
-		fmt.Println("The connection was established directly (or via VPN).\n")
+		fmt.Println("TOR is not enabled, direct connection is used.\n")
 	}
 
 	username := getUsername()
