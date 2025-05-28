@@ -100,7 +100,7 @@ func main() {
 	progress := make(chan int, len(passwords))
 	var wg sync.WaitGroup
 
-	workerCount := 5
+	workerCount := 1
 	jobs := make(chan string, len(passwords))
 	for i := 0; i < workerCount; i++ {
 		wg.Add(1)
