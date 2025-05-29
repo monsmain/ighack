@@ -16,6 +16,9 @@
 
 </div>
 
+# ❗️❗️❗️This code is still being updated. Thank you for your patience.❗️❗️❗️
+
+
 ## 📥Download Termux for Android:
 | Source | Download Links
 |:--------:| -------------:|
