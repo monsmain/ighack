@@ -8,6 +8,9 @@
     </p> <h3>viewers:</h3> <br> <img src="https://profile-counter.glitch.me/monsmain/count.svg" alt="Visitors"><p align="center"> <br><img src="https://github.com/NiREvil/workers-cloudflare/blob/main/Other/pics/snake.svg" width="1280px">
 </div>
 
+
+# وضعیت: ❗️❗️❗️این کد همچنان در حال به‌روزرسانی است. از صبر و شکیبایی شما متشکریم.❗️❗️❗️
+
 ## 📥دانلود ترموکس اندروید:
 
 | منبع | لینک‌های دانلود |
