@@ -127,11 +127,6 @@ func main() {
 	// ... بقیه کد مثل قبل
 }
 
-	fmt.Println("\nStarting login attempts...\n")
-	found := make(chan LoginResult, 1)
-	progress := make(chan int, len(passwords))
-	var wg sync.WaitGroup
-
 	jobs := make(chan string, len(passwords))
 	for i := 0; i < WORKER_COUNT; i++ {
 		wg.Add(1)
