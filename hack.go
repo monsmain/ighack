@@ -130,29 +130,6 @@ func main() {
 	jobs := make(chan string, len(passwords))
 	for i := 0; i < WORKER_COUNT; i++ {
 		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for password := range jobs {
-				res := tryLogin(username, password, useTor)
-				progress <- 1
-				if res.Success {
-					select {
-					case found <- res:
-					default:
-					}
-					return
-				}
-				time.Sleep(randomDuration(RATE_LIMIT_MIN, RATE_LIMIT_MAX))
-			}
-		}()
-	}
-
-	go func() {
-		for _, password := range passwords {
-			jobs <- password
-		}
-		close(jobs)
-	}()
 
 	go showProgressBar(len(passwords), progress)
 
