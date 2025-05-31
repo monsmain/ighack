@@ -127,7 +127,7 @@ func main() {
 	// ... بقیه کد مثل قبل
 }
 
-	jobs := make(chan string, len(passwords))
+	jobs := make(chan string)
 	for i := 0; i < WORKER_COUNT; i++ {
 		wg.Add(1)
 
