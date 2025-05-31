@@ -127,9 +127,6 @@ func main() {
 	// ... بقیه کد مثل قبل
 }
 
-	for i := 0; i < WORKER_COUNT; i++ {
-		wg.Add(1)
-
 	go showProgressBar(len(passwords), progress)
 
 	select {
