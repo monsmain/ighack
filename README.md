@@ -62,8 +62,8 @@ cd ighack
 go run hack.go
 ```
 ## Usage Options:
-### AUTO ATTACK Option: From this option you can start attacking the default permissions list of the tool.
-### MANUAL ATTACK Option: From this option you can select the manual pass list and try the attack.
+- AUTO ATTACK Option: From this option you can start attacking the default permissions list of the tool.
+- MANUAL ATTACK Option: From this option you can select the manual pass list and try the attack.
 
 > **Guide**
 
