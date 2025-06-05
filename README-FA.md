@@ -76,10 +76,7 @@ git pull
 
 ## ❤️ Donate ❤️
 ### اگر این کد را برای خود مفید می‌دانید، می‌توانید با اهدای هر مبلغی از آن حمایت کنید.
-#### USDT TRC20: `TUbfZzk65ABHceGhYjP6RLfALczsFfBW3q`
-#### Tron: `TUbfZzk65ABHceGhYjP6RLfALczsFfBW3q`
-#### USDT Polygon: `0xCE00bc3CF18b02Fd68B27Bc13b27A0D6df0530da`
-####  Polygon: `0xCE00bc3CF18b02Fd68B27Bc13b27A0D6df0530da`
+###  [❤️link donate❤️](https://monsmain.carrd.co/)
 
 ### چگونه مشارکت کنیم:
 اگر علاقه‌مند به مشارکت در پروژه ighack هستید، می‌توانید مخزن را فورک کنید، تغییرات یا بهبودهای لازم را اعمال کنید و درخواست pull ارسال کنید. مشارکت‌های شما در افزایش کارایی و قابلیت اطمینان ابزار برای همه کاربران ارزشمند است.
