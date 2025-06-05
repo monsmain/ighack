@@ -80,9 +80,8 @@ to see the tutorial for this section.
 ```
 git pull
 ```
-## Donate ❤️
-### If you find this code useful for you, you can support it by donating any amount.
-###  [❤️link donate❤️](https://monsmain.carrd.co/)
+## Donate❤️
+### If you find this code useful for you, you can support it by donating any amount.[❤️link donate❤️](https://monsmain.carrd.co/)
 
 ### How to Contribute:
 If you're interested in contributing to the ighack project, you can fork the repository, make any necessary changes or improvements, and send a pull request. Your contributions will enhance the tool's functionality and reliability for all users.
@@ -90,7 +89,5 @@ If you're interested in contributing to the ighack project, you can fork the rep
 ## Disclaimer
  **Usage Responsibility:**
 * The developer of this program takes no responsibility for how users choose to use it. Whether the usage is legal or ethical is entirely the responsibility of the user.
-
 * We are not liable for any misuse, damage, legal issues, or negative consequences arising from improper or unauthorized use of this code.
-
 * By downloading or using this code, you explicitly agree to all the terms stated in this disclaimer.
