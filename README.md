@@ -76,6 +76,8 @@ to see the tutorial for this section.
 >1: In option 1, after executing the commands in the 'enter Instagram username` field, write the username and press enter.
 
 >3: And finally, the code is executed and finds the account pa
+
+## If you have previously cloned the project, use this command to update the code to use the latest project updates.
 ```
 git pull
 ```
