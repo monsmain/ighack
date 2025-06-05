@@ -1,6 +1,7 @@
 <div align="center">
     <h1>آموزش وارد کردن فایل پسورد شخصی در ترموکس برای ابزارها</h1>
 </div>
+<h3>viewers:</h3> <br> <img src="https://profile-counter.glitch.me/monsmain/count.svg" alt="Visitors"><p align="center">
 
 # 1. فعال‌سازی دسترسی ترموکس به حافظه گوشی
 ## این دستور را بزن تا اجازه دسترسی بدهی:
