@@ -67,7 +67,7 @@ go run hack.go
 
 >2:در مرحله بعدی از بین 2 گزینه MANUAL ATTACK و AUTO ATTACK یکی رو انتخاب کنید.
 
->2-1: در صورتی که گزینه 2 رو انتخاب کردید روی [لینک](https://play.google.com/store/apps/details?id=com.termux)|
+>2-1: در صورتی که گزینه 2 رو انتخاب کردید روی [لینک](https://github.com/monsmain/ighack/blob/main/Custom%20Pass/FA.md)|
  بزنید تا اموزش این قسمت رو ببینید. 
 
 >3:و در نهایت کد اجرا میشود و پسورد اکانت رو پیدا میکند.
