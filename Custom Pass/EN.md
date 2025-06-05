@@ -1,7 +1,9 @@
 <div align="center">
 <h1>Instructions for importing a personal password file into Termux for tools</h1>
 </div>
-<h3>viewers:</h3> <br> <img src="https://profile-counter.glitch.me/monsmain/count.svg" alt="Visitors"><p align="center">
+
+## Donate❤️
+### If you find this code useful for you, you can support it by donating any amount.[link donate❤️](https://monsmain.carrd.co/)
 
 ## 1. Enable Termux access to the phone's storage
 ### To allow access, type this command:
