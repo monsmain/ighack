@@ -62,13 +62,20 @@ cd ighack
 ```
 go run hack.go
 ```
-> *Guide*
+## Usage Options:
+### AUTO ATTACK Option: From this option you can start attacking the default permissions list of the tool.
+### MANUAL ATTACK Option: From this option you can select the manual pass list and try the attack.
 
-> 1: After running the above commands, enter the desired username when prompted at "enter Instagram username: and press Enter.
+> **Guide**
 
-> 2: In the next step, wait for it to find the account password.
+>1 Choose one of the 2 options MANUAL ATTACK and AUTO ATTACK.
 
-## If you’ve cloned the project before, use this command to update the code and get the latest version.
+>1-1: If you choose option 2, click on [link](https://github.com/monsmain/ighack/blob/main/Custom%20Pass/EN.md)
+to see the tutorial for this section.
+
+>1: In option 1, after executing the commands in the 'enter Instagram username` field, write the username and press enter.
+
+>3: And finally, the code is executed and finds the account pa
 ```
 git pull
 ```
