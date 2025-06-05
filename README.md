@@ -33,7 +33,6 @@
 apt update -y && apt upgrade -y
 ```
 ## Step 2: Install Prerequisites
-- Linux : `sudo apt install golang `
 - Termux : `pkg install golang -y &&  pkg install git -y 
  `
 ## Step 3: Install tor
