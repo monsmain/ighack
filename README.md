@@ -26,42 +26,42 @@
 ## Supported on: (Tested)
 - `Linux` ✅
 - `Termux` ✅
-# Let’s give it a try :trollface:
-## Step 1: Install Updates
+## Let’s give it a try :trollface:
+### Step 1: Install Updates
 
 ```
 apt update -y && apt upgrade -y
 ```
-## Step 2: Install Prerequisites
+### Step 2: Install Prerequisites
 - Termux : `pkg install golang -y &&  pkg install git -y 
  `
-## Step 3: Install tor
+### Step 3: Install tor
 ```
 pkg install tor -y && pkg install libexecinfo -y 
 ```
-## Step 4: Create a Module
+### Step 4: Create a Module
 ```
 go mod init monsmain/ighack
 ```
-## step 5: Install proxy
+### step 5: Install proxy
 ```
 go get golang.org/x/net/proxy
 ```
-## Step 6: Clone the File to Your Device
+### Step 6: Clone the File to Your Device
 ```
 git clone https://github.com/monsmain/ighack
 ```
-## Step 7: Call It
+### Step 7: Call It
 ```
 cd ighack
 ```
-## Step 8: If you are using Tor, you need to open a new session, type "tor" and wait until it shows 100% (done), then return to the previous page.
-## ⚠️ Skip this step if you are using a direct connection or a VPN. ⚠️
-## Final Step: Run It
+### Step 8: If you are using Tor, you need to open a new session, type "tor" and wait until it shows 100% (done), then return to the previous page.
+### ⚠️ Skip this step if you are using a direct connection or a VPN. ⚠️
+### Final Step: Run It
 ```
 go run hack.go
 ```
-## Usage Options:
+### Usage Options:
 - AUTO ATTACK Option: From this option you can start attacking the default permissions list of the tool.
 - MANUAL ATTACK Option: From this option you can select the manual pass list and try the attack.
 
@@ -76,21 +76,21 @@ to see the tutorial for this section.
 
 >3: And finally, the code is executed and finds the account pa
 
-## If you have previously cloned the project, use this command to update the code to use the latest project updates.
+### If you have previously cloned the project, use this command to update the code to use the latest project updates.
 ```
 git pull
 ```
-# ❤️ Donate ❤️
-## If you find this code useful for you, you can support it by donating any amount.
+## ❤️ Donate ❤️
+### If you find this code useful for you, you can support it by donating any amount.
 #### USDT TRC20: `TUbfZzk65ABHceGhYjP6RLfALczsFfBW3q`
 #### Tron: `TUbfZzk65ABHceGhYjP6RLfALczsFfBW3q`
 #### USDT Polygon: `0xCE00bc3CF18b02Fd68B27Bc13b27A0D6df0530da`
 ####  Polygon: `0xCE00bc3CF18b02Fd68B27Bc13b27A0D6df0530da`
 
-## How to Contribute:
+### How to Contribute:
 If you're interested in contributing to the ighack project, you can fork the repository, make any necessary changes or improvements, and send a pull request. Your contributions will enhance the tool's functionality and reliability for all users.
 
-# Disclaimer
+## Disclaimer
  **Usage Responsibility:**
 * The developer of this program takes no responsibility for how users choose to use it. Whether the usage is legal or ethical is entirely the responsibility of the user.
 
