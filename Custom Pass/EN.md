@@ -3,7 +3,7 @@
 </div>
 
 ## Donate❤️
-### If you find this code useful for you, you can support it by donating any amount.[link donate❤️](https://monsmain.carrd.co/)
+### If you find this code useful for you, you can support it by donating any amount.  [link donate❤️](https://monsmain.carrd.co/)
 
 ## 1. Enable Termux access to the phone's storage
 ### To allow access, type this command:
