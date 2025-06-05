@@ -4,7 +4,7 @@
 <h3>viewers:</h3> <br> <img src="https://profile-counter.glitch.me/monsmain/count.svg" alt="Visitors"><p align="center">
 
 # 1. فعال‌سازی دسترسی ترموکس به حافظه گوشی
-- ## برای اجازه دسترسی این دستور را بزن :
+### برای اجازه دسترسی این دستور را بزن :
 ```
 termux-setup-storage
 ```
