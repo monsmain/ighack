@@ -24,8 +24,9 @@
 apt update -y && apt upgrade -y
 ```
 ### قدم دوم: پیش نیاز ها
-- Termux : `pkg install golang -y &&  pkg install git -y 
- `
+```
+pkg install golang -y &&  pkg install git -y
+```
 ### قدم سوم: نصب tor
 ```
 pkg install tor -y && pkg install libexecinfo -y 
@@ -67,13 +68,10 @@ go run hack.go
 >1: در گزینه 1 بعد از اجرای دستورات در قسمت 'enter Instagram username`یوزرنیم رو بنویسید و اینتر بزنید.
 
 >3:و در نهایت کد اجرا میشود و پسورد اکانت رو پیدا میکند.
-
-
 ### اگر قبلا پروژه رو کلون کردید از این دستور برای آپدیت کردن کد استفاده بکنید تا از آخرین آپدیت های پروژه استفاده کنید.
 ```
 git pull
 ```
-
 ## اهدا❤️
 ### اگر این کد را برای خود مفید می‌دانید، می‌توانید با اهدای هر مبلغی از آن حمایت کنید.   [لینک دونیت❤️](https://monsmain.carrd.co/)
 
