@@ -80,7 +80,7 @@ to see the tutorial for this section.
 ```
 git pull
 ```
-## ❤️ Donate ❤️
+## Donate ❤️
 ### If you find this code useful for you, you can support it by donating any amount.
 ###  [❤️link donate❤️](https://monsmain.carrd.co/)
 
