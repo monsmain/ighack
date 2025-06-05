@@ -38,4 +38,4 @@ ls ~
 pass.txt
 ```
 ### After running the commands in the 'Enter Instagram Username' section, write the username and press the enter key.
-### And finally, the code runs and finds the user account.
+### And finally, the code runs and finds the user account password.
