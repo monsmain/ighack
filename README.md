@@ -28,13 +28,13 @@
 - `Termux` ✅
 ## Let’s give it a try :trollface:
 ### Step 1: Install Updates
-
 ```
 apt update -y && apt upgrade -y
 ```
 ### Step 2: Install Prerequisites
-- Termux : `pkg install golang -y &&  pkg install git -y 
- `
+```
+pkg install golang -y &&  pkg install git -y
+```
 ### Step 3: Install tor
 ```
 pkg install tor -y && pkg install libexecinfo -y 
@@ -75,7 +75,6 @@ to see the tutorial for this section.
 >1: In option 1, after executing the commands in the 'enter Instagram username` field, write the username and press enter.
 
 >3: And finally, the code is executed and finds the account pa
-
 ### If you have previously cloned the project, use this command to update the code to use the latest project updates.
 ```
 git pull
