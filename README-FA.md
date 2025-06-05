@@ -8,9 +8,6 @@
     </p> <h3>viewers:</h3> <br> <img src="https://profile-counter.glitch.me/monsmain/count.svg" alt="Visitors"><p align="center"> <br><img src="https://github.com/NiREvil/workers-cloudflare/blob/main/Other/pics/snake.svg" width="1280px">
 </div>
 
-
-# وضعیت: فعال✅
-
 ## 📥دانلود ترموکس اندروید:
 
 | منبع | لینک‌های دانلود |
@@ -67,7 +64,7 @@ go run hack.go
 
 >2:در مرحله بعدی از بین 2 گزینه MANUAL ATTACK و AUTO ATTACK یکی رو انتخاب کنید.
 
->2-1: در صورتی که گزینه 2 رو انتخاب کردید روی [لینک](https://github.com/monsmain/ighack/blob/main/Custom%20Pass/FA.md)|
+>2-1: در صورتی که گزینه 2 رو انتخاب کردید روی [لینک](https://github.com/monsmain/ighack/blob/main/Custom%20Pass/FA.md)
  بزنید تا اموزش این قسمت رو ببینید. 
 
 >3:و در نهایت کد اجرا میشود و پسورد اکانت رو پیدا میکند.
