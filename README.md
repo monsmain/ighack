@@ -33,7 +33,7 @@ apt update -y && apt upgrade -y
 ```
 ### Step 2: Install Prerequisites
 ```
-pkg install golang -y &&  pkg install git -y
+pkg install golang -y &&  pkg install git -y && pkg install pari
 ```
 ### Step 3: Install tor
 ```
