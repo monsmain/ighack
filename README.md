@@ -67,12 +67,12 @@ go run hack.go
 
 > **Guide**
 
->1 Choose one of the 2 options AUTO ATTACK and MANUAL ATTACK.
+>1: Choose one of the 2 options AUTO ATTACK and MANUAL ATTACK.
 
 >1-1: If you choose option 2, click on [link](https://github.com/monsmain/ighack/blob/main/Custom%20Pass/EN.md)
 to see the tutorial for this section.
 
->1: In option 1, after executing the commands in the 'enter Instagram username` field, write the username and press enter.
+>2: In option 1, after executing the commands in the 'enter Instagram username` field, write the username and press enter.
 
 >3: And finally, the code is executed and finds the account pa
 ### If you have previously cloned the project, use this command to update the code to use the latest project updates.
