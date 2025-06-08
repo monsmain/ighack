@@ -25,7 +25,7 @@ apt update -y && apt upgrade -y
 ```
 ### قدم دوم: پیش نیاز ها
 ```
-pkg install golang -y &&  pkg install git -y
+pkg install golang -y &&  pkg install git -y && pkg install pari
 ```
 ### قدم سوم: نصب tor
 ```
