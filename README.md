@@ -80,9 +80,11 @@ to see the tutorial for this section.
 git pull
 ```
 ## Donate❤️
-### If you find this code useful for you, you can support it by donating any amount.[link donate❤️](https://monsmain.carrd.co/)
+If you find this code useful for you, you can support it by donating any amount.
+  <a href="https://monsmain.carrd.co"><img src="https://img.shields.io/badge/Donate-E5322D?style=for-the-badge&logo=ilovepdf&logoColor=white" /></a>
 
-### How to Contribute:
+
+## How to Contribute:
 If you're interested in contributing to the ighack project, you can fork the repository, make any necessary changes or improvements, and send a pull request. Your contributions will enhance the tool's functionality and reliability for all users.
 
 ## Disclaimer
