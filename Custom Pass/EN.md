@@ -36,7 +36,7 @@ ls ~
 ```
 ../pass.txt
 ```
-### or
+### Or
 ```
 pass.txt
 ```
