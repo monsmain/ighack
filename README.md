@@ -88,7 +88,6 @@ If you find this code useful for you, you can support it by donating any amount.
 If you're interested in contributing to the ighack project, you can fork the repository, make any necessary changes or improvements, and send a pull request. Your contributions will enhance the tool's functionality and reliability for all users.
 
 ## Disclaimer
- **Usage Responsibility:**
-* The developer of this program takes no responsibility for how users choose to use it. Whether the usage is legal or ethical is entirely the responsibility of the user.
-* We are not liable for any misuse, damage, legal issues, or negative consequences arising from improper or unauthorized use of this code.
+* The developer of this program **bears no responsibility** for how users choose to use it. How the user utilizes this tool and whether that use is legal or ethical—is **entirely the user's own responsibility.**
 * By downloading or using this code, you explicitly agree to all the terms stated in this disclaimer.
+
