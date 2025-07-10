@@ -5,7 +5,7 @@
     <p>
         <a href="README.md">
             <small>English</small> <img src='images/flag-en.png' alt='English' style='width: 20px;height: 15px;border-radius: 3px;' /> </a> | <img src='images/Flag-iran.png' alt='فارسی' style='width: 20px;height: 15px;border-radius: 3px;' /> <small>فارسی</small>
-    </p> <h3>viewers:</h3> <br> <img src="https://profile-counter.glitch.me/monsmain/count.svg" alt="Visitors"><p align="center"> <br><img src="https://github.com/NiREvil/NiREvil/blob/main/profile-3d-contrib/snake.svg" width="1280px">
+    </p> <h3>viewers:</h3> <br> <img src="https://profile-counter.glitch.me/monsmain/count.svg" alt="Visitors"><p align="center"> <br><img src="https://github.com/monsmain/ighack/blob/main/images/snake.svg" width="1280px">
 </div>
 
 ## 📥دانلود ترموکس اندروید:
