@@ -73,7 +73,7 @@ go run hack.go
 git pull
 ```
 ## اهدا❤️
-اگر این کد را برای خود مفید می‌دانید، می‌توانید با اهدای هر مبلغی از آن حمایت کنید. 
+اگر این کد را برای خود مفید می‌دانید، می‌توانید با اهدای هر مبلغی از من حمایت کنید. 
   <a href="https://monsmain.github.io/index.html#timeline03-1l"><img src="https://img.shields.io/badge/Donate-E5322D?style=for-the-badge&logo=ilovepdf&logoColor=white" /></a>
  
 
