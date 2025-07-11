@@ -1,3 +1,13 @@
+<div align="center"> <h2>📞Contact Me</h2>
+</div>
+<p align="center">
+  <a href="https://t.me/monsmain"><img src="https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" /></a>
+  <a href="https://monsmain.github.io/index.html#form02-6"><img src="https://img.shields.io/badge/gmail-242424?style=for-the-badge&logo=gmail&logoColor=White" /></a>
+  <a href="https://youtube.com/@monsmain"><img src="https://img.shields.io/badge/Youtube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" /></a>
+  <a href="https://x.com/mons_main"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=X&logoColor=white" /></a>
+  <a href="https://instagram.com/themonsmain"><img src="https://img.shields.io/badge/Instagram-FF0069?style=for-the-badge&logo=instagram&logoColor=white" /></a>
+</p>
+
 <div align="center">
     <h1>Hack Bruteforce Instagram</h1>
 </div>
@@ -10,15 +20,6 @@
         </a>
         | <img src='images/flag-en.png' alt='English' style='width: 20px;height: 15px;border-radius: 3px;' />
         <small>English</small> </p> <br><img src="https://github.com/monsmain/ighack/blob/main/images/snake.svg" width="1280px">
-<div align="center">
-    <h3>📞Contact Me</h3>
-</div>
-<p align="center">
-  <a href="https://youtube.com/@monsmain"><img src="https://img.shields.io/badge/Youtube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" /></a>
-  <a href="https://t.me/monsmain"><img src="https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" /></a>
-  <a href="https://x.com/mons_main"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" /></a>
-  <a href="https://instagram.com/themonsmain"><img src="https://img.shields.io/badge/Instagram-FF0069?style=for-the-badge&logo=instagram&logoColor=white" /></a>
-</p>
 </div>
 
 ## 📥Download Termux for Android:
@@ -87,7 +88,6 @@ git pull
 ## Donate❤️
 If you find this code useful for you, you can support it by donating any amount.
   <a href="https://monsmain.github.io/index.html#timeline03-1l"><img src="https://img.shields.io/badge/Donate-E5322D?style=for-the-badge&logo=ilovepdf&logoColor=white" /></a>
-
 
 ## How to Contribute:
 If you're interested in contributing to the ighack project, you can fork the repository, make any necessary changes or improvements, and send a pull request. Your contributions will enhance the tool's functionality and reliability for all users.
