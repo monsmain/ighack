@@ -1,12 +1,4 @@
 
-<p align="center">
-  <a href="https://t.me/monsmain"><img src="https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" /></a>
-  <a href="https://monsmain.github.io/index.html#form02-6"><img src="https://img.shields.io/badge/gmail-242424?style=for-the-badge&logo=gmail&logoColor=White" /></a>
-  <a href="https://youtube.com/@monsmain"><img src="https://img.shields.io/badge/Youtube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" /></a>
-  <a href="https://x.com/mons_main"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=X&logoColor=white" /></a>
-  <a href="https://instagram.com/themonsmain"><img src="https://img.shields.io/badge/Instagram-FF0069?style=for-the-badge&logo=instagram&logoColor=white" /></a>
-</p>
-
 <div align="center">
     <h1>Hack Bruteforce Instagram</h1>
 </div>
@@ -18,7 +10,8 @@
             <img src='images/Flag-iran.png' alt='persian' style='width: 20px;height: 15px;border-radius: 3px;' />
         </a>
         | <img src='images/flag-en.png' alt='English' style='width: 20px;height: 15px;border-radius: 3px;' />
-        <small>English</small> </p> <br><img src="https://github.com/monsmain/ighack/blob/main/images/snake.svg" width="1280px">
+        <small>English</small> </p> 
+<br><img src="https://github.com/monsmain/ighack/blob/main/images/snake.svg" width="1280px">
 </div>
 
 ## 📥Download Termux for Android:
