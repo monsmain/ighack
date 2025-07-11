@@ -1,5 +1,4 @@
-<div align="center"> <h2>📞Contact Me</h2>
-</div>
+
 <p align="center">
   <a href="https://t.me/monsmain"><img src="https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" /></a>
   <a href="https://monsmain.github.io/index.html#form02-6"><img src="https://img.shields.io/badge/gmail-242424?style=for-the-badge&logo=gmail&logoColor=White" /></a>
