@@ -78,7 +78,7 @@ git pull
   <a href="https://monsmain.github.io/index.html#timeline03-1l"><img src="https://img.shields.io/badge/Donate-E5322D?style=for-the-badge&logo=ilovepdf&logoColor=white" /></a>
  
 
-## مشارکت:
+## مشارکت
 ما همیشه به دنبال بهبود ابزار هستیم! اگر ایده‌ای دارید یا باگ پیدا کردید، لطفاً یک [Issue](https://github.com/monsmain/ighack/issues) جدید ایجاد کنید یا یک [Pull Request](https://github.com/monsmain/ighack/pulls) ارسال کنید.
 
 ## سلب مسئولیت
