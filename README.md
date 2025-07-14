@@ -66,7 +66,7 @@ go run hack.go
 
 > **Guide**
 
->1: Choose one of the 2 options AUTO ATTACK and MANUAL ATTACK.
+>1: Choose one of the 2 options AUTO ATTACK or MANUAL ATTACK.
 
 >1-1: If you choose option 2, click on [link](https://github.com/monsmain/ighack/blob/main/Custom%20Pass/EN.md)
 to see the tutorial for this section.
