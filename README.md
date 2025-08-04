@@ -20,7 +20,7 @@ In a bruteforce attack, a software automatically tries a large number of differe
 ### Future Updates:
 | New Features | Status |
 |:---|:---:|
-| Add a shell script | ⏳ In Progress |
+| Adding a shell script | ⏳ In Progress |
 
 ## 📥Download Termux for Android:
 | Source | Download Links
