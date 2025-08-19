@@ -86,7 +86,7 @@ to see the tutorial for this section.
 git pull
 ```
 ## Donate❤️
-If you find this code useful, you can support me by donating any amount <a href="https://monsmain.github.io/index.html#timeline03-1l"><img src="https://img.shields.io/badge/Donate-E5322D?style=for-the-badge&logo=ilovepdf&logoColor=white" /></a>
+If you find this code useful, you can support me by donating any amount <a href="https://monsmain.github.io/donate/"><img src="https://img.shields.io/badge/Donate-E5322D?style=for-the-badge&logo=ilovepdf&logoColor=white" /></a>
 
 ## Contribute
 We are always looking to improve the tool! If you have an idea or find a bug, please create a new [Issue](https://github.com/monsmain/ighack/issues) or submit a [Pull Request](https://github.com/monsmain/ighack/pulls).
